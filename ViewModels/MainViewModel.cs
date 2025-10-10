@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
+using System.Windows.Forms;
 using Agent.UI.Wpf.Services;
 
 namespace Agent.UI.Wpf.ViewModels
@@ -20,7 +21,11 @@ namespace Agent.UI.Wpf.ViewModels
 
         // Config
         private string _configRoot;
-        public string ConfigRoot { get => _configRoot; set => SetField(ref _configRoot, value); }
+        public string ConfigRoot 
+        { 
+            get => _configRoot; 
+            set => SetField(ref _configRoot, value); 
+        }
 
         // DDS
         private string _domainId = "0";
@@ -32,7 +37,22 @@ namespace Agent.UI.Wpf.ViewModels
 
         public ObservableCollection<string> TypeNames { get; } = new();
         private string? _selectedType;
-        public string? SelectedType { get => _selectedType; set => SetField(ref _selectedType, value); }
+        public string? SelectedType
+        {
+            get => _selectedType;
+            set
+            {
+                if (SetField(ref _selectedType, value))
+                {
+                    // Whenever the selected type changes, update Topic default (strip C_)
+                    if (!string.IsNullOrWhiteSpace(_selectedType))
+                    {
+                        var baseTopic = _selectedType.StartsWith("C_") ? _selectedType.Substring(2) : _selectedType;
+                        Topic = baseTopic;
+                    }
+                }
+            }
+        }
 
         private string _topic = "";
         public string Topic { get => _topic; set => SetField(ref _topic, value); }
@@ -89,7 +109,13 @@ namespace Agent.UI.Wpf.ViewModels
         public MainViewModel(string configRoot, ClockService clock)
         {
             _clock = clock;
-            _configRoot = configRoot;
+            // Default config root: if not provided, assume 'config' folder next to exe
+            _configRoot = string.IsNullOrWhiteSpace(configRoot)
+                ? System.IO.Path.Combine(AppContext.BaseDirectory, "config")
+                : configRoot;
+
+            // Wire service logging to ViewModel Log
+            Agent.UI.Wpf.Services.ConfigService.LogAction = (s) => Log(s);
 
             ConnectCommand = new RelayCommand(() => Log($"Connect to {Address}:{Port} as {SelectedRole}"));
             DisconnectCommand = new RelayCommand(() => Log("Disconnect"));
@@ -142,15 +168,17 @@ namespace Agent.UI.Wpf.ViewModels
 
         private void BrowseConfig()
         {
-            var dlg = new OpenFileDialog
+            // Use FolderBrowserDialog so users can pick a folder directly
+            using var dlg = new System.Windows.Forms.FolderBrowserDialog
             {
-                Title = "Pick any file inside your config directory",
-                Filter = "All files|*.*"
+                Description = "Select your config directory",
+                SelectedPath = ConfigRoot
             };
-            if (dlg.ShowDialog() == true)
+
+            var res = dlg.ShowDialog();
+            if (res == System.Windows.Forms.DialogResult.OK || res == System.Windows.Forms.DialogResult.Yes)
             {
-                var dir = System.IO.Path.GetDirectoryName(dlg.FileName)!;
-                ConfigRoot = dir;
+                ConfigRoot = dlg.SelectedPath;
                 Log($"Config set: {ConfigRoot}");
                 ReloadConfig();
             }
@@ -158,16 +186,44 @@ namespace Agent.UI.Wpf.ViewModels
 
         private void ReloadConfig()
         {
-            // TODO: Replace with real loader (reads config/qos|topics|generated)
-            QosProfiles.Clear();
-            QosProfiles.Add("Lib::Profile_A");
-            QosProfiles.Add("Lib::Profile_B");
+            try
+            {
+                QosProfiles.Clear();
+                TypeNames.Clear();
 
-            TypeNames.Clear();
-            TypeNames.Add("C_SampleType");
-            TypeNames.Add("C_AnotherType");
+                var profiles = ConfigService.LoadQosProfiles(_configRoot);
+                if (profiles.Count == 0)
+                {
+                    Log("No QoS profiles found in config");
+                }
+                else
+                {
+                    foreach (var p in profiles) QosProfiles.Add(p);
+                    SelectedQosProfile = QosProfiles.Count > 0 ? QosProfiles[0] : null;
+                }
 
-            Log("Config reloaded");
+                var types = ConfigService.LoadTypeNames(_configRoot);
+                if (types.Count == 0)
+                {
+                    Log("No type definitions found in config");
+                }
+                else
+                {
+                    foreach (var t in types) TypeNames.Add(t);
+                    SelectedType = TypeNames.Count > 0 ? TypeNames[0] : null;
+                    // If topic empty, set a sensible default derived from selected type
+                    if (string.IsNullOrWhiteSpace(Topic) && SelectedType != null)
+                    {
+                        Topic = SelectedType.StartsWith("C_") ? SelectedType.Substring(2) : SelectedType;
+                    }
+                }
+
+                Log("Config reloaded");
+            }
+            catch (Exception ex)
+            {
+                Log($"Config load failed: {ex.Message}");
+            }
         }
     }
 }
