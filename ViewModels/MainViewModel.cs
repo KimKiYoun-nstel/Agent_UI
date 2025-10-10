@@ -40,6 +40,13 @@ namespace Agent.UI.Wpf.ViewModels
         private string _payload = "{}";
         public string Payload { get => _payload; set => SetField(ref _payload, value); }
 
+    // --- Pub/Sub names ---
+    private string _publisherName = "pub1";
+    public string PublisherName { get => _publisherName; set => SetField(ref _publisherName, value); }
+
+    private string _subscriberName = "sub1";
+    public string SubscriberName { get => _subscriberName; set => SetField(ref _subscriberName, value); }
+
         // Log
         public string[] LogLevels { get; } = new[] { "Info", "Debug" };
         private string _selectedLogLevel = "Info";
@@ -62,6 +69,20 @@ namespace Agent.UI.Wpf.ViewModels
         public RelayCommand CreateReaderCommand { get; }
         public RelayCommand PublishCommand { get; }
         public RelayCommand ClearLogCommand { get; }
+        // Pub/Sub commands
+        public RelayCommand CreatePublisherCommand { get; }
+        public RelayCommand DestroyPublisherCommand { get; }
+        public RelayCommand CreateSubscriberCommand { get; }
+        public RelayCommand DestroySubscriberCommand { get; }
+
+        // Traffic (messages)
+        public sealed class TrafficItem
+        {
+            public string Header { get; init; } = "";
+            public string Json { get; init; } = "";
+        }
+        public ObservableCollection<TrafficItem> Traffic { get; } = new();
+        public RelayCommand ClearTrafficCommand { get; }
 
         private readonly ClockService _clock;
 
@@ -76,11 +97,37 @@ namespace Agent.UI.Wpf.ViewModels
             ReloadConfigCommand = new RelayCommand(ReloadConfig);
             CreateParticipantCommand = new RelayCommand(() => Log($"Create Participant (domain={DomainId}, qos={SelectedQosProfile})"));
             ClearDdsCommand = new RelayCommand(() => Log("Clear DDS"));
+            
+            // Pub/Sub commands
+            CreatePublisherCommand = new RelayCommand(() =>
+            {
+                Log($"[Publisher] create: name={PublisherName}, domain={DomainId}, qos={SelectedQosProfile}");
+                // TODO: IPC - op=create, target=publisher
+            });
+            DestroyPublisherCommand = new RelayCommand(() => Log($"[Publisher] destroy: name={PublisherName}"));
+
+            CreateSubscriberCommand = new RelayCommand(() =>
+            {
+                Log($"[Subscriber] create: name={SubscriberName}, domain={DomainId}, qos={SelectedQosProfile}");
+                // TODO: IPC - op=create, target=subscriber
+            });
+            DestroySubscriberCommand = new RelayCommand(() => Log($"[Subscriber] destroy: name={SubscriberName}"));
+
+            // Traffic
+            ClearTrafficCommand = new RelayCommand(() => Traffic.Clear());
             OpenFormCommand = new RelayCommand(() => Log("Open dynamic form (TODO)"));
             FillSampleCommand = new RelayCommand(() => Payload = "{\n  \"sample\": true\n}");
             CreateWriterCommand = new RelayCommand(() => Log($"Create Writer on topic '{Topic}'"));
             CreateReaderCommand = new RelayCommand(() => Log($"Create Reader on topic '{Topic}'"));
-            PublishCommand = new RelayCommand(() => Log($"Publish to '{Topic}' payload bytes={Payload.Length}"));
+            PublishCommand = new RelayCommand(() =>
+            {
+                Log($"Publish to '{Topic}' payload bytes={Payload.Length}");
+                Traffic.Add(new TrafficItem
+                {
+                    Header = $"[{_clock.Now():HH:mm:ss}] OUT topic='{Topic}' type='{SelectedType}'",
+                    Json = Payload
+                });
+            });
             ClearLogCommand = new RelayCommand(() => Logs.Clear());
 
             // Initial load from config (qos/topic/type)

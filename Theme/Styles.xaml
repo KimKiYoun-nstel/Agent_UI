@@ -4,14 +4,70 @@
     <Setter Property="Margin" Value="6"/>
     <Setter Property="Padding" Value="6"/>
   </Style>
-  <Style TargetType="TextBox">
-    <Setter Property="Margin" Value="0,0,6,0"/>
-  </Style>
-  <Style TargetType="ComboBox">
-    <Setter Property="Margin" Value="0,0,6,0"/>
-  </Style>
+  <!-- (TextBox/ComboBox now use FieldControl via BasedOn below) -->
   <Style TargetType="Button">
     <Setter Property="Margin" Value="0,0,6,0"/>
     <Setter Property="Padding" Value="8,4"/>
+  </Style>
+
+  <!-- Added styles from development guide: label, field, small button -->
+  <Style x:Key="LabelText" TargetType="TextBlock">
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="0,0,8,0"/>
+  </Style>
+
+  <Style x:Key="FieldControl" TargetType="Control">
+    <Setter Property="Margin" Value="0,0,12,0"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <Style x:Key="SmallButton" TargetType="Button">
+    <Setter Property="Padding" Value="6,3"/>
+    <Setter Property="Margin" Value="6,0,0,0"/>
+  </Style>
+
+  <!-- Apply field spacing globally to TextBox and ComboBox -->
+  <Style TargetType="TextBox" BasedOn="{StaticResource FieldControl}"/>
+  <Style TargetType="ComboBox" BasedOn="{StaticResource FieldControl}"/>
+
+  <!-- Monospace text style for payload/logs -->
+  <Style x:Key="MonoText" TargetType="TextBox">
+    <Setter Property="FontFamily" Value="Consolas"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+    <Setter Property="Background" Value="#FFF"/>
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+
+  <!-- Row wrapper for label+field groups -->
+  <Style x:Key="FieldRow" TargetType="StackPanel">
+    <Setter Property="Orientation" Value="Horizontal"/>
+    <Setter Property="Margin" Value="0,4,0,4"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+  </Style>
+
+  <!-- Action button (smaller, consistent) -->
+  <Style x:Key="ActionButton" TargetType="Button" BasedOn="{StaticResource SmallButton}">
+    <Setter Property="Padding" Value="6,3"/>
+    <Setter Property="MinWidth" Value="64"/>
+  </Style>
+
+  <!-- Action button variants -->
+  <Style x:Key="PrimaryAction" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+    <Setter Property="Background" Value="#E6EEF8"/>
+  </Style>
+  <Style x:Key="DangerAction" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+    <Setter Property="Background" Value="#F8E6E6"/>
+  </Style>
+
+  <!-- Border for grouping related fields -->
+  <Style x:Key="FieldGroupBorder" TargetType="Border">
+    <Setter Property="BorderBrush" Value="#EEE"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="Padding" Value="6"/>
+    <Setter Property="Margin" Value="0,4,0,4"/>
+    <Setter Property="Background" Value="Transparent"/>
   </Style>
 </ResourceDictionary>

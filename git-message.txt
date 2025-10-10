@@ -1,0 +1,20 @@
+﻿UI: 간격 개선 및 DDS 컨트롤 그룹화, 스타일 통합
+
+UI: 간격 개선 및 DDS 컨트롤 그룹화, 스타일 통합
+
+- 스타일 추가/정리: MonoText, FieldRow, FieldGroupBorder, ActionButton/PrimaryAction 추가.
+- 지원되지 않는 Spacing Setter 제거 및 인라인 Height/Margin을 스타일로 위임하여 간격 일관성 확보.
+- `MainWindow.xaml` 레이아웃 정리:
+  - 상단(Role/Address/Port/Config)과 Topic/Type을 `FieldRow`로 그룹화하여 라벨-필드 간격 개선.
+  - `DDS Entities`의 Participant/Publisher/Subscriber를 `FieldGroupBorder`로 그룹화하고 pub/sub을 세로 스택으로 재배치.
+  - Destroy 버튼 제거(간소화) 및 pub/sub 액션은 Create로 단순화.
+  - Publisher/Subscriber 텍스트박스를 고정 너비에서 Stretch+MinWidth로 변경하여 버튼이 필드에 더 가깝게 보이도록 조정.
+  - Payload 및 메시지 JSON 박스에 `MonoText` 적용.
+  - 창 최소 너비(`MinWidth`) 설정으로 레이아웃 붕괴 방지.
+- 불필요한 코드비하인드 클릭 핸들러 제거.
+- 본 패치에서는 빌드/실행은 수행하지 않음.
+
+수정된 주요 파일:
+- `Theme/Styles.xaml`
+- `Views/MainWindow.xaml`
+- `Views/MainWindow.xaml.cs`
