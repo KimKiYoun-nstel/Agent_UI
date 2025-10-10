@@ -1,7 +1,0 @@
-﻿스테이지2~3.5: 프로토콜/코덱/전송/로그 개선
-
-- 스테이지2 (기초): ITransport/IFrameCodec 인터페이스와 기본 CBOR/프레임 DTO 추가, CBOR-바이트스트링 코덱 및 AgentClient 기본 구현 (요청/응답 루프)
-- 스테이지3 (프레이밍): RIPC 24바이트 헤더 지원(Wire.cs), AgentClient에서 헤더 부착/파싱 및 corr_id 기반 안전한 매칭 로직 추가
-- 스테이지3.5 (호환성안정성): target을 항상 Map({"kind":..., ...})으로 인코딩하도록 변경(Frames.Req.TargetExtra 추가), Cbor 디코더를 관용 모드(Lax)로 처리, UDP 바인드/연결 순서 수정(Windows WSA 오류 대응), 전송디코드 예외 로깅 강화, --autoconnect 및 디버그 로그 기록(%TEMP%\Agent.UI.Wpf.debug.log)
-
-변경파일 예시: Services/Frames.cs, Services/CborMapCodec.cs, Services/UdpTransport.cs, Services/AgentClient.cs, ViewModels/MainViewModel.cs, App.xaml.cs
