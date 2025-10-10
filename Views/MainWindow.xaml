@@ -163,13 +163,15 @@
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,6">
                             <ComboBox Width="140" ItemsSource="{Binding LogLevels}" SelectedItem="{Binding SelectedLogLevel}" />
+                            <Button Content="Copy All" Command="{Binding CopyLogCommand}" Style="{StaticResource SmallButton}"/>
                             <Button Content="Clear" Command="{Binding ClearLogCommand}" Style="{StaticResource SmallButton}"/>
                         </StackPanel>
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding Logs}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}" FontFamily="Consolas" TextWrapping="Wrap"/>
+                                        <TextBox Text="{Binding ., Mode=OneWay}" FontFamily="Consolas" TextWrapping="Wrap"
+                                                 IsReadOnly="True" BorderThickness="0" Background="Transparent" FocusVisualStyle="{x:Null}"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -197,10 +199,10 @@
                                     <DataTemplate>
                                         <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                             <StackPanel>
-                                                <TextBlock FontFamily="Consolas" FontWeight="Bold"
-                                                                                 Text="{Binding Header}" />
-                                                <TextBox Style="{StaticResource MonoText}" Text="{Binding Json}"
-                                                                             IsReadOnly="True"/>
+                                                <TextBox FontFamily="Consolas" FontWeight="Bold"
+                                                         Text="{Binding Header, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FocusVisualStyle="{x:Null}"/>
+                                                <TextBox Style="{StaticResource MonoText}" Text="{Binding Json, Mode=OneWay}"
+                                                         IsReadOnly="True" FocusVisualStyle="{x:Null}"/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
