@@ -362,3 +362,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Ignore zipped UI artifacts and local commit message files
+*.zip
+*.exe
+.git_commit_msg.txt
+
+# Ignore any local exported logs or archives
+*.log
+*.tgz
+*.tar

@@ -1,0 +1,85 @@
+[SEND-REQ] id=3
+{
+"args": {
+"domain": 0,
+"qos": "TriadQosLib::DefaultReliable"
+},
+"op": "create",
+"proto": 1,
+"target": {
+"kind": "participant"
+}
+}
+[RSP] id=3 action=participant created domain=0
+
+[SEND-REQ] id=4
+{
+"args": {
+"domain": 0,
+"publisher": "pub1",
+"qos": "TriadQosLib::DefaultReliable"
+},
+"op": "create",
+"proto": 1,
+"target": {
+"kind": "publisher"
+}
+}
+[RSP] id=4 action=publisher created domain=0 publisher=pub1
+
+[SEND-REQ] id=5
+{
+"args": {
+"domain": 0,
+"publisher": "pub1",
+"qos": "TriadQosLib::DefaultReliable"
+},
+"op": "create",
+"proto": 1,
+"target": {
+"kind": "writer",
+"topic": "Actual_Alarm",
+"type": "P_Alarms_PSM::C_Actual_Alarm"
+}
+}
+[RSP] id=5 action=writer created domain=0 publisher=pub1
+
+[SEND-REQ] id=6
+{
+"args": {
+"domain": 0,
+"qos": "TriadQosLib::DefaultReliable",
+"subscriber": "sub1"
+},
+"op": "create",
+"proto": 1,
+"target": {
+"kind": "subscriber"
+}
+}
+[RSP] id=6 action=subscriber created domain=0
+
+[SEND-REQ] id=7
+{
+"args": {
+"domain": 0,
+"qos": "TriadQosLib::DefaultReliable",
+"subscriber": "sub1"
+},
+"op": "create",
+"proto": 1,
+"target": {
+"kind": "reader",
+"topic": "Actual_Alarm",
+"type": "P_Alarms_PSM::C_Actual_Alarm"
+}
+}
+
+[SEND-REQ] id=8
+{
+"op": "clear",
+"proto": 1,
+"target": {
+"kind": "dds_entities"
+}
+}

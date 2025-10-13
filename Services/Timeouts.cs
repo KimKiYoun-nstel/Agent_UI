@@ -7,5 +7,9 @@ namespace Agent.UI.Wpf.Services
     {
         /// <summary>hello 요청 타임아웃(초)</summary>
         public const int HelloSeconds = 5;
+        /// <summary>
+        /// create 계열(참가자/엔티티 생성) 타임아웃(권장)
+        /// </summary>
+        public const int CreateSeconds = 5;
     }
 }

@@ -1,4 +1,6 @@
-# copilot_instructions.md
+# copilot-instructions.md
+
+- 모든 진행상황과 답변은 한글로 한다.
 
 ## 1) 목적과 적용 범위
 

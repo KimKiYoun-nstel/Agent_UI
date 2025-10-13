@@ -60,7 +60,15 @@ namespace Agent.UI.Wpf.Services
                     foreach (var e in structElems)
                     {
                         var nameAttr = e.Attribute("name")?.Value;
-                        if (!string.IsNullOrEmpty(nameAttr) && nameAttr.StartsWith("C_", StringComparison.Ordinal))
+                        if (string.IsNullOrEmpty(nameAttr) || !nameAttr.StartsWith("C_", StringComparison.Ordinal)) continue;
+                        // find enclosing module name if present
+                        var module = e.Ancestors().FirstOrDefault(a => a.Name.LocalName == "module");
+                        var moduleName = module?.Attribute("name")?.Value;
+                        if (!string.IsNullOrEmpty(moduleName))
+                        {
+                            results.Add($"{moduleName}::{nameAttr}");
+                        }
+                        else
                         {
                             results.Add(nameAttr);
                         }

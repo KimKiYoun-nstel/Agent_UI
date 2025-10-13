@@ -44,6 +44,7 @@
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -82,11 +83,16 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Domain" Style="{StaticResource LabelText}" VerticalAlignment="Center"/>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBox Width="140" Text="{Binding DomainId}" />
-                                    <TextBlock Text="QoS" Style="{StaticResource LabelText}" VerticalAlignment="Center" Margin="10,0,6,0"/>
-                                    <ComboBox ItemsSource="{Binding QosProfiles}" SelectedItem="{Binding SelectedQosProfile}" Width="140"/>
-                                </StackPanel>
+                                <Grid Grid.Column="1" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Width="140" Text="{Binding DomainId}" />
+                                    <TextBlock Grid.Column="1" Text="QoS" Style="{StaticResource LabelText}" VerticalAlignment="Center" Margin="10,0,6,0"/>
+                                    <ComboBox Grid.Column="2" ItemsSource="{Binding QosProfiles}" SelectedItem="{Binding SelectedQosProfile}" HorizontalAlignment="Stretch" />
+                                </Grid>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="Create Participant" Command="{Binding CreateParticipantCommand}" Style="{StaticResource PrimaryAction}"/>
                                     <Button Content="Clear" Command="{Binding ClearDdsCommand}" Style="{StaticResource ActionButton}"/>
@@ -156,8 +162,11 @@
                 </GroupBox>
             </Grid>
 
+            <!-- GridSplitter between left and right panels -->
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#EEE" ShowsPreview="True"/>
+
             <!-- Right: TabControl with Log and Messages -->
-            <TabControl Grid.Column="1" Margin="8,0,0,0">
+            <TabControl Grid.Column="2" Margin="8,0,0,0">
                 <!-- Log 탭 -->
                 <TabItem Header="Log">
                     <DockPanel>
@@ -167,14 +176,9 @@
                             <Button Content="Clear" Command="{Binding ClearLogCommand}" Style="{StaticResource SmallButton}"/>
                         </StackPanel>
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Logs}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding ., Mode=OneWay}" FontFamily="Consolas" TextWrapping="Wrap"
-                                                 IsReadOnly="True" BorderThickness="0" Background="Transparent" FocusVisualStyle="{x:Null}"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <TextBox Text="{Binding LogsText, Mode=OneWay}" FontFamily="Consolas" TextWrapping="Wrap" 
+                                     IsReadOnly="True" BorderThickness="0" Background="Transparent" FocusVisualStyle="{x:Null}"
+                                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
                         </ScrollViewer>
                     </DockPanel>
                 </TabItem>
@@ -192,23 +196,8 @@
                             <Button Content="Clear" Command="{Binding ClearTrafficCommand}" Style="{StaticResource SmallButton}"/>
                         </StackPanel>
 
-                        <!-- 실제 메시지 리스트 -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl ItemsSource="{Binding Traffic}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,6">
-                                            <StackPanel>
-                                                <TextBox FontFamily="Consolas" FontWeight="Bold"
-                                                         Text="{Binding Header, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FocusVisualStyle="{x:Null}"/>
-                                                <TextBox Style="{StaticResource MonoText}" Text="{Binding Json, Mode=OneWay}"
-                                                         IsReadOnly="True" FocusVisualStyle="{x:Null}"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                        <!-- 실제 메시지 리스트 (FlowDocumentScrollViewer 자체가 스크롤을 처리) -->
+                        <FlowDocumentScrollViewer Grid.Row="1" x:Name="MessagesViewer" VerticalScrollBarVisibility="Auto" IsToolBarVisible="False"/>
                     </Grid>
                 </TabItem>
             </TabControl>
