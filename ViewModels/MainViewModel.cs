@@ -78,6 +78,22 @@ namespace Agent.UI.Wpf.ViewModels
                         var baseTopic = t.StartsWith("C_") ? t.Substring(2) : t;
                         Topic = baseTopic;
                     }
+                    // Also auto-generate sample payload from schema cache
+                    try
+                    {
+                        var tname = _selectedType;
+                        if (!string.IsNullOrWhiteSpace(tname))
+                        {
+                            var sample = _sampleBuilder.BuildSample(tname!);
+                            Payload = System.Text.Json.JsonSerializer.Serialize(sample, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                            Status = "Sample JSON updated";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // don't break UI; log the issue
+                        Log($"Sample generation failed: {ex.Message}");
+                    }
                 }
             }
         }
@@ -115,6 +131,7 @@ namespace Agent.UI.Wpf.ViewModels
         public AsyncRelayCommand ClearDdsCommand { get; }
         public RelayCommand OpenFormCommand { get; }
         public RelayCommand FillSampleCommand { get; }
+    public RelayCommand SampleJsonCommand { get; }
         public AsyncRelayCommand CreateWriterCommand { get; }
         public AsyncRelayCommand CreateReaderCommand { get; }
         public RelayCommand PublishCommand { get; }
@@ -139,9 +156,11 @@ namespace Agent.UI.Wpf.ViewModels
         public RelayCommand ClearTrafficCommand { get; }
     public RelayCommand HandshakeCommand { get; }
 
-        private readonly ClockService _clock;
+    private readonly ClockService _clock;
     private readonly string? _autoConnectArg;
     private readonly string _debugLogPath;
+    private readonly Services.ITypeSchemaProvider _typeProvider;
+    private readonly Services.SampleJsonBuilder _sampleBuilder;
 
         // Create timeout (from Timeouts.CreateSeconds)
         private static readonly TimeSpan CreateTimeout = TimeSpan.FromSeconds(Agent.UI.Wpf.Services.Timeouts.CreateSeconds);
@@ -188,16 +207,31 @@ namespace Agent.UI.Wpf.ViewModels
                 // marshal to UI thread
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // pretty-print event data
-                    var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-                    var json = System.Text.Json.JsonSerializer.Serialize(e.Data, options);
-                    Traffic.Add(new TrafficItem
+                    try
                     {
-                        Header = $"[{_clock.Now():HH:mm:ss}] IN {e.Kind}",
-                        Json = json,
-                        IsInbound = true
-                    });
-                    UpdateTrafficText();
+                        // pretty-print event data
+                        var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                        var json = System.Text.Json.JsonSerializer.Serialize(e.Data, options);
+                        Traffic.Add(new TrafficItem
+                        {
+                            Header = $"[{_clock.Now():HH:mm:ss}] IN {e.Kind}",
+                            Json = json,
+                            IsInbound = true
+                        });
+                        UpdateTrafficText();
+
+                        // 강화: data 이벤트는 로그와 Payload 미러링(선택적) 처리
+                        if (string.Equals(e.Kind, "data", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log($"EVT data: {json}");
+                            // 미러링 동작은 주석 처리된 형태로 보존; 필요 시 활성화
+                            // Payload = json;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"EventReceived 처리 오류: {ex.Message}");
+                    }
                 });
             };
 
@@ -495,16 +529,111 @@ namespace Agent.UI.Wpf.ViewModels
                 catch (OperationCanceledException) { Status = "Create timeout"; Log("Create reader timeout"); }
                 catch (Exception ex) { Status = "Create error"; Log($"Create reader error: {ex.Message}"); }
             }, null, ex => Log($"CreateReaderCommand exception: {ex.Message}"));
-            PublishCommand = new RelayCommand(() =>
+            PublishCommand = new RelayCommand(async () =>
             {
-                Log($"Publish to '{Topic}' payload bytes={Payload.Length}");
-                Traffic.Add(new TrafficItem
+                try
                 {
-                    Header = $"[{_clock.Now():HH:mm:ss}] OUT topic='{Topic}' type='{SelectedType}'",
-                    Json = Payload
-                });
+                    // 입력 검사
+                    if (!int.TryParse(DomainId, out var d)) throw new InvalidOperationException("DomainId가 필요합니다");
+                    Require(d >= 0, "Domain 필요");
+                    Require(!IsNullOrWhite(PublisherName), "Publisher 이름 필요");
+                    var tname = !IsNullOrWhite(TopicName) ? TopicName : Topic;
+                    var typename = !IsNullOrWhite(TypeName) ? TypeName : SelectedType;
+                    Require(!IsNullOrWhite(tname), "Topic 필요");
+                    Require(!IsNullOrWhite(typename), "Type 필요 (예: C_*)");
+
+                    // 1) Payload JSON 파싱 및 compact 문자열 생성
+                    var jsonObj = ParseJsonOrThrow(Payload);
+                    var compact = ToCompactJsonString(jsonObj);
+
+                    // 2) Req 작성 (Gateway 계약: data.text = JSON 문자열)
+                    var qos = BuildQos();
+                    var targetExtra = new System.Collections.Generic.Dictionary<string, object?> {
+                        ["topic"] = tname,
+                        ["type"] = typename
+                    };
+                    var args = new System.Collections.Generic.Dictionary<string, object?> {
+                        ["domain"] = d,
+                        ["publisher"] = PublisherName,
+                        ["qos"] = qos
+                    };
+                    var data = new { text = compact };
+
+                    var req = new Req
+                    {
+                        Op = "write",
+                        Target = "writer",
+                        TargetExtra = targetExtra,
+                        Args = args,
+                        Data = data
+                    };
+
+                    AddOutTraffic("write", new { target = targetExtra, args, data });
+
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    var rsp = await _agent.RequestAsync(req, cts.Token);
+
+                    AddInTraffic("write", new { ok = rsp.Ok, action = rsp.Action, data = rsp.Data, err = rsp.Err });
+                    Status = rsp.Ok ? "Write OK" : $"Write failed: {rsp.Err ?? "unknown"}";
+                }
+                catch (OperationCanceledException)
+                {
+                    Status = "Write timeout"; Log("Write timeout");
+                }
+                catch (Exception ex)
+                {
+                    Status = "Write error"; Log($"Write error: {ex.Message}");
+                }
             });
+
+            // JSON helpers used by PublishCommand
+            static object ParseJsonOrThrow(string text)
+            {
+                try
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<object>(text)
+                           ?? throw new InvalidOperationException("빈 JSON");
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Payload JSON 오류: {ex.Message}");
+                }
+            }
+
+            static string ToCompactJsonString(object node)
+                => System.Text.Json.JsonSerializer.Serialize(node, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
             ClearLogCommand = new RelayCommand(() => { Logs.Clear(); LogsText = string.Empty; });
+
+            // Instantiate type schema provider and sample builder (parses config/generated once)
+            _typeProvider = new Services.XmlTypeSchemaProvider(_configRoot);
+            _sampleBuilder = new Services.SampleJsonBuilder(_typeProvider);
+
+            // populate TypeNames from provider (cached list)
+            try
+            {
+                TypeNames.Clear();
+                foreach (var tn in _typeProvider.GetTypeNames()) TypeNames.Add(tn);
+                if (TypeNames.Count > 0 && string.IsNullOrWhiteSpace(SelectedType)) SelectedType = TypeNames[0];
+            }
+            catch (Exception ex) { Log($"Type list load failed: {ex.Message}"); }
+
+            // Sample JSON command
+            SampleJsonCommand = new RelayCommand(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(SelectedType) && string.IsNullOrWhiteSpace(TypeName)) throw new InvalidOperationException("Type 필요");
+                    var tname = !string.IsNullOrWhiteSpace(TypeName) ? TypeName : SelectedType!;
+                    var sample = _sampleBuilder.BuildSample(tname);
+                    Payload = System.Text.Json.JsonSerializer.Serialize(sample, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    Status = "Sample JSON generated";
+                }
+                catch (Exception ex)
+                {
+                    Status = "Sample JSON error";
+                    Log($"Sample JSON error: {ex.Message}");
+                }
+            });
 
             // Initial load from config (qos/topic/type)
             ReloadConfig();

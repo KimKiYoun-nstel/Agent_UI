@@ -1,0 +1,73 @@
+C_Actual_Alarm
+{
+    "A_alarmCategory_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_alarmState": "L_Actual_Alarm_StateType_Unacknowledged",
+    "A_componentName": "componentName",
+    "A_dateTimeRaised": {
+        "A_nanoseconds": 1,
+        "A_second": 1
+    },
+    "A_measure": "measure",
+    "A_nature": "nature",
+    "A_raisingCondition_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_subsystemName": "subsystemName",
+    "A_timeOfDataGeneration": {
+        "A_nanoseconds": 1,
+        "A_second": 1
+    }
+}
+
+C_Crew_Role_In_Mission_State
+{
+    "A_crewRoleName": "crewRoleName",
+    "A_missionState_sourceID": [
+        {
+            "A_instanceId": 1,
+            "A_resourceId": 1
+        }
+    ],
+    "A_relevantAlarmType_sourceID": [
+        {
+            "A_instanceId": 1,
+            "A_resourceId": 1
+        }
+    ],
+    "A_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_timeOfDataGeneration": {
+        "A_nanoseconds": 1,
+        "A_second": 1
+    }
+}
+
+C_Tone_Specification
+{
+    "A_alarmCategorySpecification_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_sourceID": {
+        "A_instanceId": 1,
+        "A_resourceId": 1
+    },
+    "A_timeOfDataGeneration": {
+        "A_nanoseconds": 1,
+        "A_second": 1
+    },
+    "A_toneFrequency": 1,
+    "A_toneMaxVolume": 1,
+    "A_toneModulationType": "toneModulationType",
+    "A_toneRepetitionFrequency": 1
+}
