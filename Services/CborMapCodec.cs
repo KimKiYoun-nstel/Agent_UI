@@ -8,8 +8,8 @@ namespace Agent.UI.Wpf.Services
     /// <summary>CBOR Map 코덱 (REQ 인코딩, RSP/EVT 디코딩)</summary>
     public sealed class CborMapCodec : IFrameCodec
     {
-        public static Action<string>? LogAction;
-        private static void Log(string msg) { if (LogAction != null) try { LogAction(msg); } catch { } }
+    public static Action<string>? LogAction;
+    private static void Log(string msg) { if (LogAction != null) try { LogAction(msg); } catch { } }
 
         public byte[] EncodeReq(Req req)
         {
@@ -21,24 +21,114 @@ namespace Agent.UI.Wpf.Services
                 w.WriteStartMap(5);
 
                 w.WriteTextString("op");     w.WriteTextString(req.Op ?? "");
-                // Encode target as a map: { "kind": req.Target, ...TargetExtra }
+                // Encode target as a map. Support several forms for req.Target:
+                // - string => { kind: "value" }
+                // - IDictionary => entries copied directly
+                // - arbitrary object => serialized to JSON then emitted as map (if object)
                 w.WriteTextString("target");
-                if (req.TargetExtra is { } extra && extra.Count > 0)
+                var extra = req.TargetExtra;
+                // If target is a dictionary-like object, copy its entries
+                if (req.Target is System.Collections.IDictionary td)
                 {
-                    w.WriteStartMap(1 + extra.Count);
-                    w.WriteTextString("kind"); w.WriteTextString(req.Target ?? "");
-                    foreach (var kv in extra)
+                    var cnt = td.Count + (extra?.Count ?? 0);
+                    w.WriteStartMap(cnt);
+                    foreach (System.Collections.DictionaryEntry de in td)
                     {
-                        w.WriteTextString(kv.Key);
-                        WriteJsonAsCbor(w, kv.Value);
+                        var key = de.Key?.ToString() ?? "";
+                        w.WriteTextString(key);
+                        WriteJsonAsCbor(w, de.Value);
+                    }
+                    if (extra != null)
+                    {
+                        foreach (var kv in extra)
+                        {
+                            w.WriteTextString(kv.Key);
+                            WriteJsonAsCbor(w, kv.Value);
+                        }
+                    }
+                    w.WriteEndMap();
+                }
+                else if (req.Target is string ts)
+                {
+                    var cnt = 1 + (extra?.Count ?? 0);
+                    w.WriteStartMap(cnt);
+                    w.WriteTextString("kind"); w.WriteTextString(ts ?? "");
+                    if (extra != null)
+                    {
+                        foreach (var kv in extra)
+                        {
+                            w.WriteTextString(kv.Key);
+                            WriteJsonAsCbor(w, kv.Value);
+                        }
                     }
                     w.WriteEndMap();
                 }
                 else
                 {
-                    w.WriteStartMap(1);
-                    w.WriteTextString("kind"); w.WriteTextString(req.Target ?? "");
-                    w.WriteEndMap();
+                    // Try serializing arbitrary object to JSON and emit properties if it's an object
+                    try
+                    {
+                        if (req.Target != null)
+                        {
+                            var raw = JsonSerializer.SerializeToUtf8Bytes(req.Target);
+                            using var doc = JsonDocument.Parse(raw);
+                            if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                            {
+                                var props = doc.RootElement.EnumerateObject().ToArray();
+                                var cnt = props.Length + (extra?.Count ?? 0);
+                                w.WriteStartMap(cnt);
+                                foreach (var p in props)
+                                {
+                                    w.WriteTextString(p.Name);
+                                    WriteElem(w, p.Value);
+                                }
+                                if (extra != null)
+                                {
+                                    foreach (var kv in extra)
+                                    {
+                                        w.WriteTextString(kv.Key);
+                                        WriteJsonAsCbor(w, kv.Value);
+                                    }
+                                }
+                                w.WriteEndMap();
+                            }
+                            else
+                            {
+                                // fallback: only emit TargetExtra
+                                var cnt = extra?.Count ?? 0;
+                                w.WriteStartMap(cnt);
+                                if (extra != null)
+                                {
+                                    foreach (var kv in extra)
+                                    {
+                                        w.WriteTextString(kv.Key);
+                                        WriteJsonAsCbor(w, kv.Value);
+                                    }
+                                }
+                                w.WriteEndMap();
+                            }
+                        }
+                        else
+                        {
+                            w.WriteStartMap(0);
+                            w.WriteEndMap();
+                        }
+                    }
+                    catch
+                    {
+                        // if anything fails, emit only TargetExtra if present
+                        var cnt = extra?.Count ?? 0;
+                        w.WriteStartMap(cnt);
+                        if (extra != null)
+                        {
+                            foreach (var kv in extra)
+                            {
+                                w.WriteTextString(kv.Key);
+                                WriteJsonAsCbor(w, kv.Value);
+                            }
+                        }
+                        w.WriteEndMap();
+                    }
                 }
 
                 w.WriteTextString("args");   WriteJsonAsCbor(w, req.Args);
@@ -48,7 +138,7 @@ namespace Agent.UI.Wpf.Services
 
                 w.WriteEndMap();
                 var enc = w.Encode();
-                Log($"CborMapCodec: EncodeReq op={req.Op} proto={req.Proto} -> {enc.Length} bytes");
+                Services.Logger.Info($"CborMapCodec: EncodeReq op={req.Op} proto={req.Proto} -> {enc.Length} bytes");
                 return enc;
             }
             catch (Exception ex)
@@ -56,9 +146,9 @@ namespace Agent.UI.Wpf.Services
                 try
                 {
                     var preview = req?.Op + ":" + (req?.Target ?? "") + " args=" + (req?.Args == null ? "null" : string.Join(',', req.Args));
-                    Log($"CborMapCodec: EncodeReq exception preview={preview} ex={ex}");
+                    Services.Logger.Info($"CborMapCodec: EncodeReq exception preview={preview} ex={ex}");
                 }
-                catch { Log($"CborMapCodec: EncodeReq exception ex={ex}"); }
+                catch { Services.Logger.Info($"CborMapCodec: EncodeReq exception ex={ex}"); }
                 throw;
             }
         }
@@ -75,6 +165,8 @@ namespace Agent.UI.Wpf.Services
 
                 bool hasOk=false, hasEvt=false;
                 bool ok=false; string? action=null; object? result=null; string? errStr=null;
+                // Collect data fields (result/detail/...) into a map so callers can access both
+                var dataMap = new System.Collections.Generic.Dictionary<string, object?>();
                 string? evtKind=null, topic=null, type=null; object? display=null;
 
                 for (int i=0; i<(mapLen ?? int.MaxValue); i++)
@@ -85,13 +177,14 @@ namespace Agent.UI.Wpf.Services
                     {
                         case "ok":     ok = r.ReadBoolean(); hasOk = true; break;
                         case "action": action = r.ReadTextString(); break;
-                        case "result": result = ReadNodeAsObject(r); break;
+                        case "result": result = ReadNodeAsObject(r); dataMap["result"] = result; break;
                         case "err":    errStr = NodeToString(r); break;
 
                         case "evt":    evtKind = r.ReadTextString(); hasEvt = true; break;
                         case "topic":  topic = r.ReadTextString(); break;
                         case "type":   type = r.ReadTextString(); break;
-                        case "display":display = ReadNodeAsObject(r); break;
+                        case "display":display = ReadNodeAsObject(r); dataMap["display"] = display; break;
+                        case "detail": var detailNode = ReadNodeAsObject(r); dataMap["detail"] = detailNode; break;
 
                         default: SkipAny(r); break;
                     }
@@ -100,12 +193,17 @@ namespace Agent.UI.Wpf.Services
 
                 if (hasOk)
                 {
-                    rsp = new Rsp { Ok = ok, Action = action, Data = result, Err = errStr };
+                    // Prefer returning a map of available data fields (result/detail/display...).
+                    // If only 'result' exists and callers expect the raw result array, they can still handle it via IDictionary path.
+                    object? dataToReturn = dataMap.Count > 0 ? (object)dataMap : result;
+                    rsp = new Rsp { Ok = ok, Action = action, Data = dataToReturn, Err = errStr };
+                    Services.Logger.Trace($"CborMapCodec IN RSP action={action} ok={ok}");
                     return true;
                 }
                 if (hasEvt)
                 {
                     evt = new Evt { Kind = evtKind ?? "unknown", Data = new { topic, type, display } };
+                    Services.Logger.Trace($"CborMapCodec IN EVT kind={evt.Kind}");
                     return true;
                 }
                 return false;
@@ -116,7 +214,7 @@ namespace Agent.UI.Wpf.Services
                 {
                     var len = Math.Min(128, src.Length);
                     var preview = BitConverter.ToString(src.Slice(0, len).ToArray()).Replace('-', ' ');
-                    Log($"CborMapCodec: TryDecode failed len={src.Length} preview={preview} ex={ex}");
+                    Services.Logger.Info($"CborMapCodec: TryDecode failed len={src.Length} preview={preview} ex={ex}");
                 }
                 catch { Log($"CborMapCodec: TryDecode failed ex={ex}"); }
                 return false;

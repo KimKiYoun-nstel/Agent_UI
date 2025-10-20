@@ -39,6 +39,14 @@
     <Setter Property="BorderThickness" Value="0"/>
   </Style>
 
+  <!-- Monospace TextBlock variant (for read-only single-line/paragraph logs) -->
+  <Style x:Key="MonoTextBlock" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="Consolas"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Margin" Value="0"/>
+  </Style>
+
   <!-- Row wrapper for label+field groups -->
   <Style x:Key="FieldRow" TargetType="StackPanel">
     <Setter Property="Orientation" Value="Horizontal"/>

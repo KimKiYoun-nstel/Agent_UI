@@ -1,0 +1,17 @@
+<Window x:Class="Agent.UI.Wpf.Views.QosDetailWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="QoS Detail" Height="480" Width="640" WindowStartupLocation="CenterOwner">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="QoS Detail" FontWeight="Bold" Margin="0,0,0,8"/>
+        <TextBox Grid.Row="1" x:Name="DetailText" Text="" IsReadOnly="True" Style="{StaticResource MonoText}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="Close" Width="80" Margin="4" Click="Close_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

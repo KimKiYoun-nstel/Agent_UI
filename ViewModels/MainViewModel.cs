@@ -54,6 +54,8 @@ namespace Agent.UI.Wpf.ViewModels
     public string TypeName { get => _typeName; set => SetField(ref _typeName, value); }
 
         public ObservableCollection<string> QosProfiles { get; } = new();
+    /// <summary>QoS 이름별 상세 JSON(문자열) 저장</summary>
+    public System.Collections.Generic.Dictionary<string, string> QosDetails { get; } = new();
         private string? _selectedQosProfile;
         public string? SelectedQosProfile { get => _selectedQosProfile; set => SetField(ref _selectedQosProfile, value); }
     private string _qosLibrary = "";
@@ -112,9 +114,25 @@ namespace Agent.UI.Wpf.ViewModels
     public string SubscriberName { get => _subscriberName; set => SetField(ref _subscriberName, value); }
 
         // Log
-        public string[] LogLevels { get; } = new[] { "Info", "Debug" };
+        public string[] LogLevels { get; } = new[] { "Info", "Trace", "Debug" };
         private string _selectedLogLevel = "Info";
-        public string SelectedLogLevel { get => _selectedLogLevel; set => SetField(ref _selectedLogLevel, value); }
+        public string SelectedLogLevel
+        {
+            get => _selectedLogLevel;
+            set
+            {
+                if (SetField(ref _selectedLogLevel, value))
+                {
+                    // map to Logger level
+                    switch (_selectedLogLevel?.ToLowerInvariant())
+                    {
+                        case "debug": Services.Logger.CurrentLevel = Services.Logger.Level.Debug; break;
+                        case "trace": Services.Logger.CurrentLevel = Services.Logger.Level.Trace; break;
+                        default: Services.Logger.CurrentLevel = Services.Logger.Level.Info; break;
+                    }
+                }
+            }
+        }
         public ObservableCollection<string> Logs { get; } = new();
     private string _logsText = "";
     public string LogsText { get => _logsText; private set => SetField(ref _logsText, value); }
@@ -122,10 +140,12 @@ namespace Agent.UI.Wpf.ViewModels
         private string _status = "Ready";
         public string Status { get => _status; set => SetField(ref _status, value); }
 
-        // Commands
-        public RelayCommand ConnectCommand { get; }
-        public RelayCommand DisconnectCommand { get; }
-        public RelayCommand BrowseConfigCommand { get; }
+    // Commands
+    public AsyncRelayCommand ToggleConnectionCommand { get; }
+    /// <summary>사용자 트리거로 QoS 재요청</summary>
+    public AsyncRelayCommand RefreshQosCommand { get; }
+    public RelayCommand ShowQosDetailCommand { get; }
+    public RelayCommand BrowseConfigCommand { get; }
         public RelayCommand ReloadConfigCommand { get; }
         public AsyncRelayCommand CreateParticipantCommand { get; }
         public AsyncRelayCommand ClearDdsCommand { get; }
@@ -136,6 +156,7 @@ namespace Agent.UI.Wpf.ViewModels
         public AsyncRelayCommand CreateReaderCommand { get; }
         public RelayCommand PublishCommand { get; }
         public RelayCommand ClearLogCommand { get; }
+    public ParameterizedRelayCommand CopySelectedLogCommand { get; }
     public RelayCommand CopyLogCommand { get; }
         // Pub/Sub commands
         public AsyncRelayCommand CreatePublisherCommand { get; }
@@ -147,7 +168,10 @@ namespace Agent.UI.Wpf.ViewModels
         public sealed class TrafficItem
         {
             public string Header { get; init; } = "";
-            public string Json { get; init; } = "";
+            /// <summary>원본(송수신) 페이로드(가능하면 원문 JSON 텍스트). 로그에 출력되는 내용의 원본입니다.</summary>
+            public string Raw { get; init; } = "";
+            /// <summary>UI의 Messages 탭에 표시할 pretty-printed JSON(읽기 전용). 원본을 변경하지 않음.</summary>
+            public string Pretty { get; init; } = "";
             public bool IsInbound { get; init; }
         }
         public ObservableCollection<TrafficItem> Traffic { get; } = new();
@@ -155,12 +179,42 @@ namespace Agent.UI.Wpf.ViewModels
     public string TrafficText { get => _trafficText; private set => SetField(ref _trafficText, value); }
         public RelayCommand ClearTrafficCommand { get; }
     public RelayCommand HandshakeCommand { get; }
+    // MVVM-friendly command to copy selected messages from the view.
+    public ParameterizedRelayCommand CopySelectedMessagesCommand { get; }
 
     private readonly ClockService _clock;
     private readonly string? _autoConnectArg;
     private readonly string _debugLogPath;
     private readonly Services.ITypeSchemaProvider _typeProvider;
     private readonly Services.SampleJsonBuilder _sampleBuilder;
+        
+    // QoS load state: 서버에서 get qos 응답을 받아 콤보박스가 완성되었는지
+    private bool _isQosLoaded = false;
+    /// <summary>QoS 목록을 서버에서 정상 수신하여 UI가 활성화 가능한 상태인지</summary>
+    public bool IsQosLoaded { get => _isQosLoaded; private set { if (SetField(ref _isQosLoaded, value)) Raise(nameof(CanUseDds)); } }
+
+    /// <summary>DDS 관련 UI가 활성화될 수 있는지 여부 (연결됨 && QoS 목록 수신됨)</summary>
+    public bool CanUseDds => IsConnected && IsQosLoaded;
+
+        // Connection state for toggle button
+        private bool _isConnected = false;
+        /// <summary>
+        /// 현재 연결 상태
+        /// </summary>
+        public bool IsConnected { get => _isConnected; private set { if (SetField(ref _isConnected, value)) RaisePropertyChangedForConnection(); } }
+
+        private void RaisePropertyChangedForConnection()
+        {
+            // notify UI for text change
+            Raise(nameof(ConnectionButtonText));
+            // Notify RefreshQosCommand that CanExecute may have changed
+            try { RefreshQosCommand?.RaiseCanExecuteChanged(); } catch { }
+        }
+
+        /// <summary>
+        /// 토글 버튼에 바인딩할 텍스트
+        /// </summary>
+        public string ConnectionButtonText => IsConnected ? "Disconnect" : "Connect";
 
         // Create timeout (from Timeouts.CreateSeconds)
         private static readonly TimeSpan CreateTimeout = TimeSpan.FromSeconds(Agent.UI.Wpf.Services.Timeouts.CreateSeconds);
@@ -189,17 +243,19 @@ namespace Agent.UI.Wpf.ViewModels
                 ? System.IO.Path.Combine(AppContext.BaseDirectory, "config")
                 : configRoot;
 
-            // Wire service logging to ViewModel Log
-            Agent.UI.Wpf.Services.ConfigService.LogAction = (s) => Log(s);
+            // Wire service logging to unified Logger which forwards to this ViewModel
+            Services.Logger.Sink = s => Log(s);
+            Services.Logger.AcceptExternal("startup");
 
             // Instantiate AgentClient with UdpTransport + CborFrameCodec
             var transport = new UdpTransport();
             var codec = new CborMapCodec();
 
-            // Wire service logs to ViewModel
-            UdpTransport.LogAction = (s) => Log(s);
-            CborMapCodec.LogAction = (s) => Log(s);
-            AgentClient.LogAction = (s) => Log(s);
+            // Keep existing per-service callbacks but route to Logger.AcceptExternal to preserve behavior
+            Agent.UI.Wpf.Services.ConfigService.LogAction = (s) => Services.Logger.AcceptExternal(s);
+            UdpTransport.LogAction = (s) => Services.Logger.AcceptExternal(s);
+            CborMapCodec.LogAction = (s) => Services.Logger.AcceptExternal(s);
+            AgentClient.LogAction = (s) => Services.Logger.AcceptExternal(s);
 
             _agent = new AgentClient(transport, codec);
             _agent.EventReceived += e =>
@@ -209,21 +265,60 @@ namespace Agent.UI.Wpf.ViewModels
                 {
                     try
                     {
-                        // pretty-print event data
-                        var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-                        var json = System.Text.Json.JsonSerializer.Serialize(e.Data, options);
+                        // Do not alter original payload formatting; emit raw JSON when available.
+                        string json;
+                        try
+                        {
+                            if (e.Data is string s) json = s;
+                            else json = System.Text.Json.JsonSerializer.Serialize(e.Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
+                        }
+                        catch
+                        {
+                            // fallback to a safe serialization
+                            json = System.Text.Json.JsonSerializer.Serialize(e.Data);
+                        }
+                        // store both raw (for Logs) and pretty (for Messages tab)
+                        var prettyJson = json;
+                        try { prettyJson = System.Text.Json.JsonSerializer.Serialize(System.Text.Json.JsonSerializer.Deserialize<object>(json), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+                        // Add to UI traffic (Messages tab) and emit a concise TRACE entry (no raw payload)
+                        var rawTruncated = Services.Logger.TruncateUtf8(json);
                         Traffic.Add(new TrafficItem
                         {
                             Header = $"[{_clock.Now():HH:mm:ss}] IN {e.Kind}",
-                            Json = json,
+                            Raw = rawTruncated,
+                            Pretty = prettyJson,
                             IsInbound = true
                         });
+                        Services.Logger.Trace($"IN {e.Kind} len={json.Length}");
                         UpdateTrafficText();
 
                         // 강화: data 이벤트는 로그와 Payload 미러링(선택적) 처리
                         if (string.Equals(e.Kind, "data", StringComparison.OrdinalIgnoreCase))
                         {
-                            Log($"EVT data: {json}");
+                            // 전체 JSON은 Traffic/Logs에 남기고, 상태바에는 간단한 한줄 요약만 표시합니다.
+                            string summary = string.Empty;
+                            try
+                            {
+                                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                                var root = doc.RootElement;
+                                if (root.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                {
+                                    if (root.TryGetProperty("topic", out var p) && p.ValueKind == System.Text.Json.JsonValueKind.String)
+                                        summary = p.GetString() ?? string.Empty;
+                                    else if (root.TryGetProperty("type", out var p2) && p2.ValueKind == System.Text.Json.JsonValueKind.String)
+                                        summary = p2.GetString() ?? string.Empty;
+                                    else
+                                    {
+                                        foreach (var prop in root.EnumerateObject()) { summary = prop.Name; break; }
+                                    }
+                                }
+                            }
+                            catch { }
+
+                            if (string.IsNullOrWhiteSpace(summary)) summary = "data";
+                            // Log concise event and set a single-line status
+                            Log($"EVT data: {summary}");
+                            Status = $"IN {summary}";
                             // 미러링 동작은 주석 처리된 형태로 보존; 필요 시 활성화
                             // Payload = json;
                         }
@@ -235,55 +330,77 @@ namespace Agent.UI.Wpf.ViewModels
                 });
             };
 
-            // Connect/Disconnect now use AgentClient and perform handshake
-            ConnectCommand = new RelayCommand(async () =>
+            // Toggle connection command: connects when disconnected, disconnects when connected
+            ToggleConnectionCommand = new AsyncRelayCommand(async () =>
             {
-                try
+                if (!_isConnected)
                 {
-                    await _agent.ConnectAsync(Address, int.Parse(Port));
-                    Log("Connected");
-
-                    // automatic hello handshake
-                    var helloReq = new Req { Op = "hello", Target = "agent", Args = null, Data = null };
-                    AddOutTraffic("hello", new { op = helloReq.Op, target = helloReq.Target });
-
-                    using var cts = new System.Threading.CancellationTokenSource(
-                        System.TimeSpan.FromSeconds(Agent.UI.Wpf.Services.Timeouts.HelloSeconds)
-                    );
-
-                    var rsp = await _agent.RequestAsync(helloReq, cts.Token);
-                    AddInTraffic("hello", new { ok = rsp.Ok, action = rsp.Action, data = rsp.Data, err = rsp.Err });
-                    // Log full response for debugging
-                    Log($"Handshake response: Ok={rsp.Ok} Action={rsp.Action} Err={rsp.Err} Data={System.Text.Json.JsonSerializer.Serialize(rsp.Data)}");
-
-                    if (rsp.Ok)
+                    try
                     {
-                        Status = "Handshake OK";
-                        Log("Handshake OK");
-                    }
-                    else
-                    {
-                        Status = "Handshake failed";
-                        Log($"Handshake failed: {rsp.Err ?? "unknown error"}");
-                    }
-                }
-                catch (System.OperationCanceledException)
-                {
-                    Status = "Handshake timeout";
-                    Log("Handshake timeout");
-                }
-                catch (System.Exception ex)
-                {
-                    Status = "Handshake error";
-                    Log($"Handshake error: {ex}");
-                }
-            });
+                        await _agent.ConnectAsync(Address, int.Parse(Port));
+                        Log("Connected");
 
-            DisconnectCommand = new RelayCommand(async () =>
-            {
-                await _agent.DisconnectAsync();
-                Log("Disconnected");
-            });
+                        // automatic hello handshake
+                        var helloReq = new Req { Op = "hello", Target = "agent", Args = null, Data = null };
+                        AddOutTraffic("hello", new { op = helloReq.Op, target = helloReq.Target });
+
+                        using var cts = new System.Threading.CancellationTokenSource(
+                            System.TimeSpan.FromSeconds(Agent.UI.Wpf.Services.Timeouts.HelloSeconds)
+                        );
+
+                        var rsp = await _agent.RequestAsync(helloReq, cts.Token);
+                        AddInTraffic("hello", new { ok = rsp.Ok, action = rsp.Action, data = rsp.Data, err = rsp.Err });
+                        Log($"Handshake response: Ok={rsp.Ok} Action={rsp.Action} Err={rsp.Err} Data={System.Text.Json.JsonSerializer.Serialize(rsp.Data)}");
+
+                        if (rsp.Ok)
+                        {
+                            Status = "Handshake OK";
+                            Log("Handshake OK");
+                        }
+                        else
+                        {
+                            Status = "Handshake failed";
+                            Log($"Handshake failed: {rsp.Err ?? "unknown error"}");
+                        }
+
+                        IsConnected = true;
+                        // 연결 성공 후 자동으로 QoS 목록을 요청하여 콤보박스를 서버 응답으로 채웁니다.
+                        try
+                        {
+                            using var ctsQ = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                            var ok = await TryLoadQosFromServerAsync(ctsQ.Token);
+                            if (ok) Log("QoS loaded after handshake");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"get qos error after handshake: {ex.Message}; keeping local config");
+                            IsQosLoaded = false;
+                        }
+                    }
+                    catch (System.OperationCanceledException)
+                    {
+                        Status = "Handshake timeout";
+                        Log("Handshake timeout");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Status = "Handshake error";
+                        Log($"Handshake error: {ex}");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        await _agent.DisconnectAsync();
+                        Log("Disconnected");
+                    }
+                    finally
+                    {
+                        IsConnected = false;
+                    }
+                }
+            }, null, ex => Log($"ToggleConnectionCommand exception: {ex.Message}"));
             BrowseConfigCommand = new RelayCommand(BrowseConfig);
             ReloadConfigCommand = new RelayCommand(ReloadConfig);
             CreateParticipantCommand = new AsyncRelayCommand(async () =>
@@ -404,6 +521,30 @@ namespace Agent.UI.Wpf.ViewModels
 
             // Traffic
             ClearTrafficCommand = new RelayCommand(() => { Traffic.Clear(); TrafficText = string.Empty; });
+            CopySelectedMessagesCommand = new ParameterizedRelayCommand(param =>
+            {
+                try
+                {
+                    if (param is System.Collections.IEnumerable items)
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        foreach (var obj in items)
+                        {
+                            if (obj is TrafficItem ti)
+                            {
+                                sb.AppendLine(ti.Header);
+                                sb.AppendLine(ti.Raw);
+                                sb.AppendLine();
+                            }
+                        }
+                        if (sb.Length > 0) System.Windows.Clipboard.SetText(sb.ToString());
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Log($"Copy selected messages failed: {ex.Message}");
+                }
+            });
             CopyLogCommand = new RelayCommand(() =>
             {
                 try
@@ -423,6 +564,25 @@ namespace Agent.UI.Wpf.ViewModels
                 catch (Exception ex)
                 {
                     Log($"Copy logs failed: {ex.Message}");
+                }
+            });
+            CopySelectedLogCommand = new ParameterizedRelayCommand(param =>
+            {
+                try
+                {
+                    if (param is System.Collections.IEnumerable items)
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        foreach (var it in items)
+                        {
+                            if (it is string s) { sb.AppendLine(s); }
+                        }
+                        if (sb.Length > 0) System.Windows.Clipboard.SetText(sb.ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Copy selected logs failed: {ex.Message}");
                 }
             });
             // Handshake command (manual retry)
@@ -452,6 +612,46 @@ namespace Agent.UI.Wpf.ViewModels
                 {
                     Status = "Handshake error";
                     Log($"Handshake error: {ex.Message}");
+                }
+            });
+
+            // Refresh QoS command (user-initiated)
+            RefreshQosCommand = new AsyncRelayCommand(async () =>
+            {
+                try
+                {
+                    // confirm with user
+                    var res = System.Windows.MessageBox.Show("서버에서 QoS 목록을 다시 가져오시겠습니까?\n(현재 DDS UI는 재요청 중 비활성화됩니다)", "Refresh QoS", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+                    if (res != System.Windows.MessageBoxResult.Yes) return;
+
+                    // disable UX until done
+                    IsQosLoaded = false;
+
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var ok = await TryLoadQosFromServerAsync(cts.Token);
+                    if (ok) Log("Manual QoS refresh succeeded");
+                    else Log("Manual QoS refresh failed; keeping local config");
+                }
+                catch (Exception ex)
+                {
+                    Log($"RefreshQosCommand error: {ex.Message}");
+                }
+            }, () => IsConnected, ex => Log($"RefreshQosCommand exception: {ex.Message}"));
+
+            ShowQosDetailCommand = new RelayCommand(() =>
+            {
+                try
+                {
+                    var sel = SelectedQosProfile;
+                    if (string.IsNullOrWhiteSpace(sel)) { System.Windows.MessageBox.Show("QoS가 선택되지 않았습니다.", "QoS Detail"); return; }
+                    if (!QosDetails.TryGetValue(sel, out var json)) { System.Windows.MessageBox.Show("상세 정보가 없습니다.", "QoS Detail"); return; }
+                    // Show in a simple window
+                    var w = new Views.QosDetailWindow(json) { Owner = System.Windows.Application.Current?.MainWindow };
+                    w.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    Log($"ShowQosDetailCommand error: {ex.Message}");
                 }
             });
             OpenFormCommand = new RelayCommand(() => Log("Open dynamic form (TODO)"));
@@ -648,6 +848,271 @@ namespace Agent.UI.Wpf.ViewModels
             catch { }
         }
 
+        /// <summary>
+        /// 서버에 get.qos 요청을 보내고 QosProfiles 컬렉션을 갱신합니다.
+        /// 반환값: 성공적으로 QoS를 채웠으면 true
+        /// </summary>
+        private async System.Threading.Tasks.Task<bool> TryLoadQosFromServerAsync(System.Threading.CancellationToken ct)
+        {
+            try
+            {
+                // Build request as: { op: "get", target: { kind: "qos" }, args: { include_builtin: true, detail: true } }
+                var getReq = new Req
+                {
+                    Op = "get",
+                    Target = new System.Collections.Generic.Dictionary<string, object?> { ["kind"] = "qos" },
+                    Args = new System.Collections.Generic.Dictionary<string, object?> { ["include_builtin"] = true, ["detail"] = true }
+                };
+                AddOutTraffic("get.qos", new { op = getReq.Op, target = getReq.Target, args = getReq.Args });
+                var getRsp = await _agent.RequestAsync(getReq, ct);
+                AddInTraffic("get.qos", new { ok = getRsp.Ok, result = getRsp.Data, err = getRsp.Err });
+
+                if (!getRsp.Ok) return false;
+
+                    // Debug: log the runtime type of getRsp.Data to diagnose parsing branches
+                    try
+                    {
+                        var dt = getRsp.Data?.GetType().FullName ?? "<null>";
+                        Services.Logger.Debug($"TryLoadQos: getRsp.Data runtime type = {dt}");
+                        // if serializable to JSON, print a small preview
+                        try
+                        {
+                            var preview = System.Text.Json.JsonSerializer.Serialize(getRsp.Data);
+                            Services.Logger.Debug($"TryLoadQos: preview={preview?.Substring(0, Math.Min(512, preview.Length))}");
+                        }
+                        catch { }
+                    }
+                    catch { }
+
+                bool filled = false;
+                try
+                {
+                    // Case A: JsonElement
+                    if (getRsp.Data is System.Text.Json.JsonElement je)
+                    {
+                        if (je.ValueKind == System.Text.Json.JsonValueKind.Array)
+                        {
+                            QosProfiles.Clear();
+                            foreach (var el in je.EnumerateArray()) if (el.ValueKind == System.Text.Json.JsonValueKind.String) { var s = el.GetString(); if (s!=null) QosProfiles.Add(s); }
+                            filled = QosProfiles.Count > 0;
+                        }
+                        else if (je.ValueKind == System.Text.Json.JsonValueKind.Object)
+                        {
+                            if (je.TryGetProperty("result", out var r) && r.ValueKind == System.Text.Json.JsonValueKind.Array)
+                            {
+                                QosProfiles.Clear();
+                                foreach (var el in r.EnumerateArray()) if (el.ValueKind == System.Text.Json.JsonValueKind.String) { var s = el.GetString(); if (s!=null) QosProfiles.Add(s); }
+                                filled = QosProfiles.Count > 0;
+                            }
+                            // detail 처리: je.detail -> store pretty JSON per qos
+                            if (je.TryGetProperty("detail", out var detail))
+                            {
+                                try
+                                {
+                                    QosDetails.Clear();
+                                    if (detail.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                    {
+                                        // detail is a map: { name: {...}, ... }
+                                        foreach (var prop in detail.EnumerateObject())
+                                        {
+                                            var pretty = System.Text.Json.JsonSerializer.Serialize(prop.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                                            QosDetails[prop.Name] = pretty;
+                                        }
+                                    }
+                                    else if (detail.ValueKind == System.Text.Json.JsonValueKind.Array)
+                                    {
+                                        // detail is an array of single-entry objects: [ { name: {...} }, ... ]
+                                        foreach (var item in detail.EnumerateArray())
+                                        {
+                                            if (item.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                            {
+                                                foreach (var prop in item.EnumerateObject())
+                                                {
+                                                    var pretty = System.Text.Json.JsonSerializer.Serialize(prop.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                                                    QosDetails[prop.Name] = pretty;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+
+                    // Case B: IEnumerable (but exclude IDictionary which is handled below)
+                    if (!filled && getRsp.Data is System.Collections.IEnumerable ie && !(getRsp.Data is System.Collections.IDictionary))
+                    {
+                        QosProfiles.Clear();
+                        foreach (var it in ie)
+                        {
+                            if (it is string ss) QosProfiles.Add(ss);
+                            else if (it is System.Text.Json.JsonElement jel && jel.ValueKind == System.Text.Json.JsonValueKind.String)
+                            {
+                                var s = jel.GetString(); if (s!=null) QosProfiles.Add(s);
+                            }
+                            else
+                            {
+                                // unknown element type: skip to avoid inserting detail/complex objects into profiles
+                            }
+                        }
+                        filled = QosProfiles.Count > 0;
+                    }
+
+                    // Case C: IDictionary with "result"
+                    if (!filled && getRsp.Data is System.Collections.IDictionary dict && dict.Contains("result"))
+                    {
+                        try
+                        {
+                            var res = dict["result"];
+                            try { Services.Logger.Debug($"TryLoadQos: dict['result'] runtime type = {res?.GetType().FullName ?? "<null>"}"); } catch { }
+                            // result may be a JsonElement array, an IEnumerable, or other
+                            if (res is System.Text.Json.JsonElement resJe && resJe.ValueKind == System.Text.Json.JsonValueKind.Array)
+                            {
+                                QosProfiles.Clear();
+                                foreach (var el in resJe.EnumerateArray())
+                                {
+                                    if (el.ValueKind == System.Text.Json.JsonValueKind.String) { var s = el.GetString(); if (!string.IsNullOrWhiteSpace(s)) QosProfiles.Add(s); }
+                                    else if (el.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                    {
+                                        // object could be { name: {...} } so take first property name
+                                        foreach (var p in el.EnumerateObject()) { var key = p.Name; if (!string.IsNullOrWhiteSpace(key)) { QosProfiles.Add(key); break; } }
+                                    }
+                                }
+                                filled = QosProfiles.Count > 0;
+                                Services.Logger.Debug($"TryLoadQos: processed JsonElement result entries, count={QosProfiles.Count}");
+                            }
+                            else if (res is System.Collections.IEnumerable rlist)
+                            {
+                                QosProfiles.Clear();
+                                foreach (var it in rlist)
+                                {
+                                    // accept string or JsonElement string
+                                    if (it is string s) { if (!string.IsNullOrWhiteSpace(s)) QosProfiles.Add(s); }
+                                    else if (it is System.Text.Json.JsonElement jel && jel.ValueKind == System.Text.Json.JsonValueKind.String)
+                                    {
+                                        var s2 = jel.GetString(); if (!string.IsNullOrWhiteSpace(s2)) QosProfiles.Add(s2);
+                                    }
+                                    else if (it is System.Collections.IDictionary idit)
+                                    {
+                                        // if element is a single-entry map { name: {...} } where key is qos name
+                                        try
+                                        {
+                                            foreach (System.Collections.DictionaryEntry kv in idit)
+                                            {
+                                                var key = kv.Key?.ToString();
+                                                if (!string.IsNullOrWhiteSpace(key)) { QosProfiles.Add(key); break; }
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                    else
+                                    {
+                                        // skip other types to avoid adding detail objects
+                                    }
+                                }
+                                filled = QosProfiles.Count > 0;
+                                Services.Logger.Debug($"TryLoadQos: processed IEnumerable result entries, count={QosProfiles.Count}");
+                            }
+                        }
+                        catch (Exception ex) { Services.Logger.Debug($"TryLoadQos: exception parsing dict['result']: {ex.Message}"); }
+                    }
+
+                    // IDictionary 'detail' 처리
+                    if (getRsp.Data is System.Collections.IDictionary dict2 && dict2.Contains("detail"))
+                    {
+                        try
+                        {
+                            QosDetails.Clear();
+                            var det = dict2["detail"];
+                            // det may be a dictionary or an enumerable of per-name objects
+                            if (det is System.Collections.IDictionary dd)
+                            {
+                                foreach (System.Collections.DictionaryEntry kv in dd)
+                                {
+                                    try { QosDetails[kv.Key?.ToString() ?? ""] = System.Text.Json.JsonSerializer.Serialize(kv.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+                                }
+                            }
+                            else if (det is System.Collections.IEnumerable detEnum && !(det is string))
+                            {
+                                // iterate array-like detail: elements may be IDictionary or JsonElement-like structures
+                                foreach (var item in detEnum)
+                                {
+                                    if (item is System.Collections.IDictionary itemDict)
+                                    {
+                                        foreach (System.Collections.DictionaryEntry kv in itemDict)
+                                        {
+                                            try { QosDetails[kv.Key?.ToString() ?? ""] = System.Text.Json.JsonSerializer.Serialize(kv.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            // fallback: try serialize item and inspect as JsonDocument
+                                            var raw = System.Text.Json.JsonSerializer.Serialize(item);
+                                            using var doc = System.Text.Json.JsonDocument.Parse(raw);
+                                            if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                            {
+                                                foreach (var prop in doc.RootElement.EnumerateObject())
+                                                {
+                                                    try { QosDetails[prop.Name] = System.Text.Json.JsonSerializer.Serialize(prop.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+                                                }
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"get qos parse error: {ex.Message}");
+                }
+
+                if (filled)
+                {
+                    SelectedQosProfile = QosProfiles.Count > 0 ? QosProfiles[0] : null;
+                    // Ensure UI changes happen on the UI thread
+                    try
+                    {
+                        var app = System.Windows.Application.Current;
+                        if (app != null && !app.Dispatcher.CheckAccess())
+                        {
+                            app.Dispatcher.Invoke(() => { IsQosLoaded = true; });
+                        }
+                        else
+                        {
+                            IsQosLoaded = true;
+                        }
+                    }
+                    catch
+                    {
+                        // fallback
+                        IsQosLoaded = true;
+                    }
+                    Services.Logger.Debug($"TryLoadQos: filled=true QosProfiles.count={QosProfiles.Count}");
+                    return true;
+                }
+
+                Services.Logger.Debug($"TryLoadQos: filled=false QosProfiles.count={QosProfiles.Count}");
+
+                return false;
+            }
+            catch (System.OperationCanceledException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log($"TryLoadQosFromServerAsync error: {ex.Message}");
+                return false;
+            }
+        }
+
         private void Log(string msg)
         {
             Logs.Add($"[{_clock.Now():HH:mm:ss}] {msg}");
@@ -663,28 +1128,57 @@ namespace Agent.UI.Wpf.ViewModels
 
         private void AddOutTraffic(string action, object? payload)
         {
-            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-            var json = System.Text.Json.JsonSerializer.Serialize(payload, options);
+            string json;
+            try
+            {
+                if (payload is string s) json = s;
+                else if (payload is byte[] b) json = "[CBOR] " + Convert.ToBase64String(b);
+                else json = System.Text.Json.JsonSerializer.Serialize(payload, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
+            }
+            catch
+            {
+                json = System.Text.Json.JsonSerializer.Serialize(payload);
+            }
+            var prettyOut = json;
+            try { prettyOut = System.Text.Json.JsonSerializer.Serialize(System.Text.Json.JsonSerializer.Deserialize<object>(json), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+            var rawTruncated = Services.Logger.TruncateUtf8(json);
             Traffic.Add(new TrafficItem
             {
                 Header = $"[{_clock.Now():HH:mm:ss}] OUT {action}",
-                Json = json,
+                Raw = rawTruncated,
+                Pretty = prettyOut,
                 IsInbound = false
             });
             try { UpdateTrafficText(); } catch { }
+            // Emit concise TRACE entry (no raw payload)
+            Services.Logger.Trace($"OUT {action} len={json.Length}");
         }
 
         private void AddInTraffic(string action, object? payload)
         {
-            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
-            var json = System.Text.Json.JsonSerializer.Serialize(payload, options);
+            string json;
+            try
+            {
+                if (payload is string s) json = s;
+                else if (payload is byte[] b) json = "[CBOR] " + Convert.ToBase64String(b);
+                else json = System.Text.Json.JsonSerializer.Serialize(payload, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
+            }
+            catch
+            {
+                json = System.Text.Json.JsonSerializer.Serialize(payload);
+            }
+            var prettyIn = json;
+            try { prettyIn = System.Text.Json.JsonSerializer.Serialize(System.Text.Json.JsonSerializer.Deserialize<object>(json), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+            var rawTruncated = Services.Logger.TruncateUtf8(json);
             Traffic.Add(new TrafficItem
             {
                 Header = $"[{_clock.Now():HH:mm:ss}] IN {action}",
-                Json = json,
+                Raw = rawTruncated,
+                Pretty = prettyIn,
                 IsInbound = true
             });
             try { UpdateTrafficText(); } catch { }
+            Services.Logger.Trace($"IN {action} len={json.Length}");
         }
 
         private void UpdateTrafficText()
@@ -695,7 +1189,7 @@ namespace Agent.UI.Wpf.ViewModels
                 foreach (var t in Traffic)
                 {
                     lines.AppendLine(t.Header);
-                    lines.AppendLine(t.Json);
+                    lines.AppendLine(t.Raw);
                     lines.AppendLine();
                 }
                 TrafficText = lines.ToString();

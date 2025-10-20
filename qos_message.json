@@ -1,0 +1,297 @@
+{
+  "detail": [
+    {
+      "NGVA_QoS_Library::config_mission_transient": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "special": "INFINITE"
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_LAST"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::control_low_latency_reliable": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "EXCLUSIVE",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "nanosec": 100000000,
+            "sec": 0
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_LAST"
+          },
+          "latency_budget": {
+            "nanosec": 3000000,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::event_alarm_strict": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "nanosec": 500000000,
+            "sec": 0
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_ALL"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::nav_reliable_transient": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "nanosec": 200000000,
+            "sec": 0
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_LAST"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::state_reliable_transient": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "special": "INFINITE"
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_LAST"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::stream_best_effort": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "BEST_EFFORT"
+        },
+        "runtime": {
+          "deadline": {
+            "special": "INFINITE"
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_LAST"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "NGVA_QoS_Library::telemetry_reliable_log": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "special": "INFINITE"
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_ALL"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "SYNC",
+          "resource_limits": {
+            "max_instances": 1000,
+            "max_samples": 10000,
+            "max_samples_per_instance": 10000
+          }
+        },
+        "source_kind": "external"
+      }
+    },
+    {
+      "TriadQosLib::DefaultReliable": {
+        "discovery": {
+          "durability": "VOLATILE",
+          "ownership": "SHARED",
+          "partition": [],
+          "presentation": "N/A",
+          "reliability": "RELIABLE"
+        },
+        "runtime": {
+          "deadline": {
+            "special": "INFINITE"
+          },
+          "history": {
+            "depth": 1,
+            "kind": "KEEP_ALL"
+          },
+          "latency_budget": {
+            "nanosec": 0,
+            "sec": 0
+          },
+          "liveliness": {
+            "kind": "AUTOMATIC",
+            "lease_duration": "INFINITE"
+          },
+          "publish_mode": "ASYNC",
+          "resource_limits": {
+            "max_instances": "UNLIMITED",
+            "max_samples": "UNLIMITED",
+            "max_samples_per_instance": "UNLIMITED"
+          }
+        },
+        "source_kind": "external"
+      }
+    }
+  ],
+  "result": [
+    "NGVA_QoS_Library::config_mission_transient",
+    "NGVA_QoS_Library::control_low_latency_reliable",
+    "NGVA_QoS_Library::event_alarm_strict",
+    "NGVA_QoS_Library::nav_reliable_transient",
+    "NGVA_QoS_Library::state_reliable_transient",
+    "NGVA_QoS_Library::stream_best_effort",
+    "NGVA_QoS_Library::telemetry_reliable_log",
+    "TriadQosLib::DefaultReliable"
+  ]
+}

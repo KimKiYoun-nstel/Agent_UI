@@ -11,6 +11,9 @@ namespace Agent.UI.Wpf
         {
             base.OnStartup(e);
 
+            // 기본 로그 레벨을 앱 시작시 DEBUG로 설정
+            Services.Logger.CurrentLevel = Services.Logger.Level.Debug;
+
             var args = Environment.GetCommandLineArgs();
             var cfgDir = ConfigLocator.Resolve(args);
             var autoArg = args.Length > 1 ? args[1] : null;
@@ -243,7 +246,7 @@ namespace Agent.UI.Wpf
                         // invoke on UI thread
                         win.Dispatcher.Invoke(() =>
                         {
-                            if (vm.ConnectCommand.CanExecute(null)) vm.ConnectCommand.Execute(null);
+                            if (vm.ToggleConnectionCommand.CanExecute(null)) vm.ToggleConnectionCommand.Execute(null);
                         });
                     }
                     catch { }

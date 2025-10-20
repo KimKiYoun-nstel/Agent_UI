@@ -4,7 +4,8 @@ namespace Agent.UI.Wpf.Services
     public sealed class Req
     {
         public required string Op { get; init; }
-        public required string Target { get; init; }
+        /// <summary>Target can be a string or structured object (e.g. { kind = "qos" })</summary>
+        public required object Target { get; init; }
         public System.Collections.Generic.Dictionary<string, object?>? TargetExtra { get; init; }
         public object? Args { get; init; }
         public object? Data { get; init; }

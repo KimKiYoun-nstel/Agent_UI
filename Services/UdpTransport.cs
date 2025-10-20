@@ -43,11 +43,11 @@ namespace Agent.UI.Wpf.Services
             try
             {
                 _udp.Client.Bind(local);
-                Log($"UdpTransport: bound to local {local}");
+                Services.Logger.Info($"UdpTransport: bound to local {local}");
             }
             catch (Exception ex)
             {
-                Log($"UdpTransport: local bind failed local={local} ex={ex}");
+                Services.Logger.Info($"UdpTransport: local bind failed local={local} ex={ex}");
                 throw;
             }
 
@@ -58,20 +58,22 @@ namespace Agent.UI.Wpf.Services
             }
             catch (Exception ex)
             {
-                Log($"UdpTransport: connect failed remote={_remote} ex={ex}");
+                Services.Logger.Info($"UdpTransport: connect failed remote={_remote} ex={ex}");
                 throw;
             }
 
             // 5) 수신 루프 시작
             _rxCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             _ = ReceiveLoop(_rxCts.Token);
-            Log($"UdpTransport started: remote={address}:{port} localPort={(LocalPort.HasValue?LocalPort.Value:0)}");
+            Services.Logger.Info($"UdpTransport started: remote={address}:{port} localPort={(LocalPort.HasValue?LocalPort.Value:0)}");
             return Task.CompletedTask;
         }
 
         public async Task SendAsync(ReadOnlyMemory<byte> payload, CancellationToken ct = default)
         {
             if (_udp == null) throw new InvalidOperationException("Transport not started");
+            // Log only summary at TRACE level; do not emit raw/base64 payload
+            Services.Logger.Trace($"UdpTransport SEND len={payload.Length}");
             await _udp.SendAsync(payload.ToArray(), payload.Length);
         }
 
@@ -81,7 +83,7 @@ namespace Agent.UI.Wpf.Services
             _udp?.Dispose();
             _udp = null; _remote = null;
             _rxCts?.Dispose(); _rxCts = null;
-            Log("UdpTransport stopped");
+            Services.Logger.Info("UdpTransport stopped");
             return Task.CompletedTask;
         }
 
@@ -95,6 +97,8 @@ namespace Agent.UI.Wpf.Services
                 try
                 {
                     var res = await _udp.ReceiveAsync(ct);
+                    // Only log summary at TRACE level; actual payload not emitted to avoid clutter
+                    Services.Logger.Trace($"UdpTransport RECV len={res.Buffer?.Length ?? 0}");
                     DatagramReceived?.Invoke(res.Buffer);
                 }
                 catch (OperationCanceledException) { break; }

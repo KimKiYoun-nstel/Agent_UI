@@ -7,8 +7,8 @@ namespace Agent.UI.Wpf.Services
     /// <summary>요청/응답 + 이벤트(헤더+CBOR Map)</summary>
     public sealed class AgentClient : IAsyncDisposable
     {
-        public static Action<string>? LogAction;
-        private static void Log(string msg) { if (LogAction != null) try { LogAction(msg); } catch { } }
+    public static Action<string>? LogAction;
+    private static void Log(string msg) { if (LogAction != null) try { LogAction(msg); } catch { } }
 
         private readonly ITransport  _tx;
         private readonly IFrameCodec _fx;
@@ -56,14 +56,15 @@ namespace Agent.UI.Wpf.Services
 
             try
             {
-                Log($"AgentClient: send REQ corr={corr} len={payload.Length}");
+                // Log summary at Info and payload at TRACE (truncate to 16KB)
+                Services.Logger.Info($"AgentClient: send REQ corr={corr} len={payload.Length}");
                 try
                 {
                     await _tx.SendAsync(buf, ct);
                 }
                 catch (Exception ex)
                 {
-                    Log($"AgentClient: SendAsync failed: {ex}");
+                    Services.Logger.Info($"AgentClient: SendAsync failed: {ex}");
                     throw;
                 }
 
@@ -76,7 +77,7 @@ namespace Agent.UI.Wpf.Services
             }
             catch (Exception ex)
             {
-                Log($"AgentClient: RequestAsync exception for corr={corr}: {ex}");
+                Services.Logger.Info($"AgentClient: RequestAsync exception for corr={corr}: {ex}");
                 throw;
             }
             finally
@@ -107,31 +108,31 @@ namespace Agent.UI.Wpf.Services
             {
                 if (_fx.TryDecode(payload, out var rsp, out _))
                 {
-                    Log($"AgentClient: got RSP corr={h.CorrId} ok={rsp?.Ok}");
+                    Services.Logger.Info($"AgentClient: got RSP corr={h.CorrId} ok={rsp?.Ok}");
                     if (_pendingMap.TryRemove(h.CorrId, out var tcs))
                     {
                         tcs.TrySetResult(rsp!);
                     }
                     else
                     {
-                        Log($"AgentClient: unmatched RSP corr={h.CorrId} (dropped)");
+                        Services.Logger.Info($"AgentClient: unmatched RSP corr={h.CorrId} (dropped)");
                     }
                 }
                 else
                 {
-                    Log("AgentClient: decode failed for RSP");
+                    Services.Logger.Info("AgentClient: decode failed for RSP");
                 }
             }
             else // EVT
             {
                 if (_fx.TryDecode(payload, out _, out var evt) && evt != null)
                 {
-                    Log($"AgentClient: got EVT kind={evt.Kind}");
+                    Services.Logger.Info($"AgentClient: got EVT kind={evt.Kind}");
                     EventReceived?.Invoke(evt);
                 }
                 else
                 {
-                    Log("AgentClient: decode failed for EVT");
+                    Services.Logger.Info("AgentClient: decode failed for EVT");
                 }
             }
         }

@@ -1,4 +1,4 @@
-C_Actual_Alarm
+//C_Actual_Alarm
 {
     "A_alarmCategory_sourceID": {
         "A_instanceId": 1,
@@ -27,7 +27,7 @@ C_Actual_Alarm
     }
 }
 
-C_Crew_Role_In_Mission_State
+//C_Crew_Role_In_Mission_State
 {
     "A_crewRoleName": "crewRoleName",
     "A_missionState_sourceID": [
@@ -52,7 +52,7 @@ C_Crew_Role_In_Mission_State
     }
 }
 
-C_Tone_Specification
+//C_Tone_Specification
 {
     "A_alarmCategorySpecification_sourceID": {
         "A_instanceId": 1,

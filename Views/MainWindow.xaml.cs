@@ -10,82 +10,102 @@ namespace Agent.UI.Wpf.Views
 {
     public partial class MainWindow : Window
     {
+        private MainViewModel? _vm;
+
         public MainWindow()
         {
-            InitializeComponent();
+            // Try to call generated InitializeComponent if present; otherwise fall back to loading XAML
+            try
+            {
+                var mi = this.GetType().GetMethod("InitializeComponent", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                if (mi != null) mi.Invoke(this, null);
+                else
+                {
+                    var uri = new Uri("/Agent.UI.Wpf;component/views/mainwindow.xaml", UriKind.Relative);
+                    System.Windows.Application.LoadComponent(this, uri);
+                }
+            }
+            catch { }
             Loaded += MainWindow_Loaded;
         }
 
-        private FlowDocument? _messagesDocument;
-
         private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-            {
-                // create FlowDocument once
-                _messagesDocument = new FlowDocument();
-                _messagesDocument.FontFamily = new System.Windows.Media.FontFamily("Consolas");
-                _messagesDocument.FontSize = 12;
-                _messagesDocument.PagePadding = new Thickness(6);
-                if (MessagesViewer != null) MessagesViewer.Document = _messagesDocument;
-
-                // initial population
-                foreach (var item in vm.Traffic) AppendTrafficItem(item);
-
-                // subscribe to collection changes and append new items incrementally
-                vm.Traffic.CollectionChanged += (s, ev) =>
-                {
-                    // only handle add/reset for simplicity
-                    if (ev.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && ev.NewItems != null)
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            foreach (var ni in ev.NewItems)
-                            {
-                                if (ni is Agent.UI.Wpf.ViewModels.MainViewModel.TrafficItem ti)
-                                    AppendTrafficItem(ti);
-                            }
-                        }));
-                    }
-                    else if (ev.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
-                    {
-                        // clear document
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            _messagesDocument?.Blocks.Clear();
-                        }));
-                    }
-                };
-            }
+            TryWireLogs();
         }
 
-        private void AppendTrafficItem(Agent.UI.Wpf.ViewModels.MainViewModel.TrafficItem item)
+        private void TryWireLogs()
         {
-            if (_messagesDocument == null) return;
-
-            var header = new Paragraph();
-            header.Margin = new Thickness(0, 0, 0, 2);
-            var run = new Run(item.Header + "\n") { FontWeight = FontWeights.Bold };
-            run.Foreground = item.IsInbound ? System.Windows.Media.Brushes.Blue : System.Windows.Media.Brushes.Black;
-            header.Inlines.Add(run);
-            _messagesDocument.Blocks.Add(header);
-
-            var body = new Paragraph();
-            body.Margin = new Thickness(0, 0, 0, 8);
-            var bodyRun = new Run(item.Json + "\n");
-            body.Inlines.Add(bodyRun);
-            _messagesDocument.Blocks.Add(body);
-
-            // keep document length bounded if needed (optional: trim older messages)
-            // Example: keep only last 1000 blocks to avoid memory blowup
-            const int maxBlocks = 2000;
-            while (_messagesDocument.Blocks.Count > maxBlocks)
+            try
             {
-                var first = _messagesDocument.Blocks.FirstBlock;
-                if (first != null) _messagesDocument.Blocks.Remove(first);
-                else break;
+                _vm = DataContext as MainViewModel;
+                if (_vm == null) return;
+
+                RenderLogs();
+
+                if (_vm.Logs is INotifyCollectionChanged incc)
+                {
+                    incc.CollectionChanged += Logs_CollectionChanged;
+                }
             }
+            catch { }
         }
-        
+
+        private void Logs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(RenderLogs));
+        }
+
+        private void RenderLogs()
+        {
+            try
+            {
+                if (_vm == null) return;
+                var box = FindName("LogBox") as System.Windows.Controls.RichTextBox;
+                if (box == null) return;
+
+                var doc = new FlowDocument();
+                foreach (var line in _vm.Logs)
+                {
+                    var p = new Paragraph { Margin = new Thickness(0) };
+                    if (line.Contains(" IN ") || line.Contains(" OUT "))
+                    {
+                        var run = new Run(line) { Foreground = System.Windows.Media.Brushes.DodgerBlue };
+                        p.Inlines.Add(run);
+                    }
+                    else
+                    {
+                        p.Inlines.Add(new Run(line));
+                    }
+                    doc.Blocks.Add(p);
+                }
+
+                box.Document = doc;
+                box.ScrollToEnd();
+            }
+            catch { }
+        }
+
+        private void CopySelectedLogs_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var box = FindName("LogBox") as System.Windows.Controls.RichTextBox;
+                if (box == null) return;
+                var txt = box.Selection.Text;
+                if (!string.IsNullOrEmpty(txt))
+                {
+                    System.Windows.Clipboard.SetText(txt);
+                    var prev = Title;
+                    Title = "Logs copied";
+                    _ = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        await System.Threading.Tasks.Task.Delay(1200);
+                        Dispatcher.Invoke(() => Title = prev);
+                    });
+                }
+            }
+            catch { }
+        }
     }
 }
