@@ -2,6 +2,8 @@ using System;
 using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System.Windows.Forms;
+using System.Xml.Linq;
+using System.Linq;
 using Agent.UI.Wpf.Services;
 
 namespace Agent.UI.Wpf.ViewModels
@@ -145,6 +147,8 @@ namespace Agent.UI.Wpf.ViewModels
     /// <summary>사용자 트리거로 QoS 재요청</summary>
     public AsyncRelayCommand RefreshQosCommand { get; }
     public RelayCommand ShowQosDetailCommand { get; }
+    /// <summary>XML 파일에서 QoS를 불러와 QosProfiles/QosDetails를 대체</summary>
+    public RelayCommand LoadQosFromFileCommand { get; }
     public RelayCommand BrowseConfigCommand { get; }
         public RelayCommand ReloadConfigCommand { get; }
         public AsyncRelayCommand CreateParticipantCommand { get; }
@@ -402,6 +406,7 @@ namespace Agent.UI.Wpf.ViewModels
                 }
             }, null, ex => Log($"ToggleConnectionCommand exception: {ex.Message}"));
             BrowseConfigCommand = new RelayCommand(BrowseConfig);
+            LoadQosFromFileCommand = new RelayCommand(LoadQosFromFile);
             ReloadConfigCommand = new RelayCommand(ReloadConfig);
             CreateParticipantCommand = new AsyncRelayCommand(async () =>
             {
@@ -646,7 +651,7 @@ namespace Agent.UI.Wpf.ViewModels
                     if (string.IsNullOrWhiteSpace(sel)) { System.Windows.MessageBox.Show("QoS가 선택되지 않았습니다.", "QoS Detail"); return; }
                     if (!QosDetails.TryGetValue(sel, out var json)) { System.Windows.MessageBox.Show("상세 정보가 없습니다.", "QoS Detail"); return; }
                     // Show in a simple window
-                    var w = new Views.QosDetailWindow(json) { Owner = System.Windows.Application.Current?.MainWindow };
+                    var w = new Views.QosDetailWindow(sel, json) { Owner = System.Windows.Application.Current?.MainWindow };
                     w.ShowDialog();
                 }
                 catch (Exception ex)
@@ -1025,8 +1030,42 @@ namespace Agent.UI.Wpf.ViewModels
                         {
                             QosDetails.Clear();
                             var det = dict2["detail"];
-                            // det may be a dictionary or an enumerable of per-name objects
-                            if (det is System.Collections.IDictionary dd)
+                            // det may be a JsonElement (from codec), a dictionary, or an enumerable of per-name objects
+                            if (det is System.Text.Json.JsonElement detJe)
+                            {
+                                // handle JsonElement array/object similarly to JsonElement branch above
+                                if (detJe.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                {
+                                    foreach (var prop in detJe.EnumerateObject())
+                                    {
+                                        try
+                                        {
+                                            var pretty = System.Text.Json.JsonSerializer.Serialize(prop.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                                            QosDetails[prop.Name] = pretty;
+                                        }
+                                        catch { }
+                                    }
+                                }
+                                else if (detJe.ValueKind == System.Text.Json.JsonValueKind.Array)
+                                {
+                                    foreach (var item in detJe.EnumerateArray())
+                                    {
+                                        if (item.ValueKind == System.Text.Json.JsonValueKind.Object)
+                                        {
+                                            foreach (var prop in item.EnumerateObject())
+                                            {
+                                                try
+                                                {
+                                                    var pretty = System.Text.Json.JsonSerializer.Serialize(prop.Value, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                                                    QosDetails[prop.Name] = pretty;
+                                                }
+                                                catch { }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (det is System.Collections.IDictionary dd)
                             {
                                 foreach (System.Collections.DictionaryEntry kv in dd)
                                 {
@@ -1254,6 +1293,58 @@ namespace Agent.UI.Wpf.ViewModels
             catch (Exception ex)
             {
                 Log($"Config load failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// XML 파일에서 qos_profile 요소를 읽어 QosProfiles/QosDetails를 대체합니다.
+        /// 각 qos_profile의 name 속성을 리스트 항목으로 사용하고, 요소 전체(XML 텍스트)를 상세로 저장합니다.
+        /// </summary>
+        private void LoadQosFromFile()
+        {
+            try
+            {
+                var ofd = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Load QoS XML",
+                    Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                    CheckFileExists = true
+                };
+                var res = ofd.ShowDialog();
+                if (res != true) return;
+                var path = ofd.FileName;
+
+                var doc = XDocument.Load(path);
+                var root = doc.Root;
+                var ns = root?.GetDefaultNamespace() ?? XNamespace.None;
+
+                var profiles = doc.Descendants(ns + "qos_profile").ToList();
+                if (profiles.Count == 0)
+                {
+                    Log("No qos_profile elements found in file");
+                    return;
+                }
+
+                QosProfiles.Clear();
+                QosDetails.Clear();
+                int i = 0;
+                foreach (var p in profiles)
+                {
+                    i++;
+                    var name = p.Attribute("name")?.Value;
+                    if (string.IsNullOrWhiteSpace(name)) name = $"profile#{i}";
+                    QosProfiles.Add(name);
+                    // store the whole element as XML text (preserve formatting produced by ToString)
+                    QosDetails[name] = p.ToString();
+                }
+
+                SelectedQosProfile = QosProfiles.Count > 0 ? QosProfiles[0] : null;
+                IsQosLoaded = true;
+                Log($"Loaded {QosProfiles.Count} QoS profiles from file: {path}");
+            }
+            catch (Exception ex)
+            {
+                Log($"LoadQoSFromFile error: {ex.Message}");
             }
         }
     }
