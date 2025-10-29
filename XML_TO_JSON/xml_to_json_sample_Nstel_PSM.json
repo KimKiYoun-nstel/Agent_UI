@@ -1,0 +1,152 @@
+{
+  "C_Cannon_Driving_Device_resultBIT": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_referenceNum": 1,
+    "A_runBITEntity_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_type": "L_BITType_C_BIT",
+    "A_BITRunning": false,
+    "A_upDownMotor": false,
+    "A_roundMotor": false,
+    "A_upDownAmp": false,
+    "A_roundAmp": false,
+    "A_baseGyro": false,
+    "A_topForwardGryro": false,
+    "A_vehicleForwardGyro": false,
+    "A_power_Controller": false,
+    "A_energyStorage": false,
+    "A_directPower": false,
+    "A_cableLoop": false
+  },
+  "C_Cannon_Driving_Device_CBIT": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_runBITEntity_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_type": "L_BITType_C_BIT",
+    "A_upDownMotor": false,
+    "A_roundMotor": false,
+    "A_upDownAmp": false,
+    "A_roundAmp": false,
+    "A_baseGyro": false,
+    "A_topForwardGryro": false,
+    "A_vehicleForwardGyro": false,
+    "A_powerController": false,
+    "A_energyStorage": false,
+    "A_directPower": false,
+    "A_cableLoop": false,
+    "A_upDownPark": false,
+    "A_round_Park": false,
+    "A_mainCannon_Lock": false,
+    "A_commFault": false
+  },
+  "C_Cannon_Driving_Device_PBIT": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_runBITEntity_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_type": "L_BITType_C_BIT",
+    "A_BITRunning": false,
+    "A_upDownMotor": false,
+    "A_roundMotor": false,
+    "A_upDownAmp": false,
+    "A_roundAmp": false,
+    "A_baseGyro": false,
+    "A_topForwardGryro": false,
+    "A_vehicleForwardGyroi": false,
+    "A_powerController": false,
+    "A_energyStorage": false,
+    "A_directPower": false,
+    "A_cableLoop": false
+  },
+  "C_Vehicle_Speed": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_speed": 1
+  },
+  "C_Cannon_Actuator_Control": {
+    "A_recipientID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_drivingPosition": 1,
+    "A_upDownPosition": 1,
+    "A_roundAngleVelocity": 1,
+    "A_upDownAngleVelocity": 1,
+    "A_cannonUpDownAngle": 1,
+    "A_topRelativeAngle": 1,
+    "A_operationMode": "L_OperationModeType_NORMAL",
+    "A_parm": "L_OnOffType_ON",
+    "A_targetDesingation": "L_TargetAllotType_ALLOT",
+    "A_autoArmPosition": "L_ArmPositionLockType_RELEASE",
+    "A_manualArmPosition": "L_ArmPositionLockType_RELEASE",
+    "A_mainCannonRestore": "L_MainCannonReturnType_RELEASE",
+    "A_manCannonFix": "L_MainCannonFixType_RELEASE",
+    "A_closeEquipOpenStatus": "L_EquipOpenLockType_LOCK"
+  },
+  "C_Cannon_Actuator_Signal": {
+    "A_recipientID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_azAngle": 1,
+    "A_e1AngleVelocity": 1,
+    "A_energyStorage": "L_ChangingStatusType_NORMAL",
+    "A_mainCannonFixStatus": "L_MainCannonFixStatusType_NORMAL",
+    "A_deckClearance": "L_DekClearanceType_OUTSIDE",
+    "A_autoArmPositionComplement": "L_ArmPositionType_NORMAL",
+    "A_manualArmPositionComple": "L_ArmPositionType_NORMAL",
+    "A_mainCannonRestoreComplement": "L_MainCannonReturnStatusType_RUNNING",
+    "A_armSafetyMainCannonLock": "L_ArmSafetyMainCannonLock_NORMAL",
+    "A_shutdown": "L_CannonDrivingDeviceShutdownType_UNKNOWN",
+    "A_roundGyro": 1,
+    "A_upDownGyro": 1
+  }
+}

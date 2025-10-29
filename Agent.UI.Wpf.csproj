@@ -6,6 +6,10 @@
   <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Prevent SDK from auto-generating assembly attributes to avoid duplicate attribute errors. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  <!-- Also avoid generating TargetFrameworkAttribute when other tasks already emit it -->
+  <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <!-- Copy config/** into output on build (adjust relative path when you relocate) -->
@@ -17,5 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Formats.Cbor" Version="8.0.0" />
+  </ItemGroup>
+  <!-- Exclude Tools helper projects from main WPF project compilation (they live under repo root) -->
+  <ItemGroup>
+    <Compile Remove="Tools\**\*.cs" />
   </ItemGroup>
 </Project>

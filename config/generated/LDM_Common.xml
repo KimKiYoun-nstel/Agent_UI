@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Program Files/rti_connext_dds-7.5.0/bin/../resource/app/app_support/rtiddsgen/schema/rti_dds_profiles.xsd">
+<types>
+<module name="P_LDM_Common">
+  <typedef name="T_Double" type="float64"/>
+  <enum name="T_RAGType">
+    <enumerator name="L_RAGType_RED"/>
+    <enumerator name="L_RAGType_AMBER"/>
+    <enumerator name="L_RAGType_GREEN"/>
+  </enum> 
+  <typedef name="T_Int32" type="int32"/>
+  <struct name= "T_Position2DType" nested="true">
+    <member name="A_xPosition" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_yPosition" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+  </struct>
+  <enum name="T_Axis3DType">
+    <enumerator name="L_Axis3DType_X_AXIS"/>
+    <enumerator name="L_Axis3DType_Y_AXIS"/>
+    <enumerator name="L_Axis3DType_Z_AXIS"/>
+  </enum> 
+  <typedef name="T_ForceInNewtonsType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_Char" type="char8"/>
+  <typedef name="T_CapacityInAmpereHoursType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_Boolean" type="boolean"/>
+  <typedef name="T_Int64" type="int64"/>
+  <struct name= "T_Size2DType" nested="true">
+    <member name="A_xSize" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_ySize" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+  </struct>
+  <typedef name="T_AngleInRadiansType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_Int16" type="int16"/>
+  <typedef name="T_LongString" sequenceMaxLength="500" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Char"/>
+  <typedef name="T_MediumString" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Char"/>
+  <typedef name="T_ShortString" sequenceMaxLength="20" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Char"/>
+  <struct name= "T_IdentifierType" nested="true">
+    <member name="A_resourceId" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_instanceId" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+  </struct>
+  <struct name= "T_DurationType" nested="true">
+    <member name="A_seconds" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_nanoseconds" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+  </struct>
+  <typedef name="T_HeartbeatType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DurationType"/>
+  <struct name= "T_DateTimeType" nested="true">
+    <member name="A_second" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int64"/>
+    <member name="A_nanoseconds" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+  </struct>
+  <typedef name="T_TorqueInNewtonMetresType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_LinearAccelerationInMetresPerSecPerSecType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_LinearAcceleration3DType" nested="true">
+    <member name="A_xAcceleration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LinearAccelerationInMetresPerSecPerSecType"/>
+    <member name="A_yAcceleration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LinearAccelerationInMetresPerSecPerSecType"/>
+    <member name="A_zAcceleration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LinearAccelerationInMetresPerSecPerSecType"/>
+  </struct>
+  <struct name= "T_AttitudeType" nested="true">
+    <member name="A_pitch" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_roll" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_yaw" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+  </struct>
+  <typedef name="T_DistanceInMetresType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_SpeedInMetresPerSecType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_PointPolar3DType" nested="true">
+    <member name="A_angle" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_elevation" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_radius" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+  </struct>
+  <struct name= "T_CoordinatePolar3DType" nested="true">
+    <member name="A_angle" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_elevation" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_range" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+  </struct>
+  <struct name= "T_CoordinatePolar2DType" nested="true">
+    <member name="A_angle" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_range" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+  </struct>
+  <typedef name="T_AngularAccelerationInRadiansPerSecPerSecType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_AngularAcceleration3DType" nested="true">
+    <member name="A_pitch" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularAccelerationInRadiansPerSecPerSecType"/>
+    <member name="A_roll" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularAccelerationInRadiansPerSecPerSecType"/>
+    <member name="A_yaw" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularAccelerationInRadiansPerSecPerSecType"/>
+  </struct>
+  <typedef name="T_AngularVelocityinRadiansPerSecType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_AngularVelocity3DType" nested="true">
+    <member name="A_pitch" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularVelocityinRadiansPerSecType"/>
+    <member name="A_roll" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularVelocityinRadiansPerSecType"/>
+    <member name="A_yaw" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngularVelocityinRadiansPerSecType"/>
+  </struct>
+  <struct name= "T_LinearVelocity3DType" nested="true">
+    <member name="A_heading" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_speed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+    <member name="A_vrate" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+  </struct>
+  <typedef name="T_LatitudeType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+  <typedef name="T_AltitudeType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+  <struct name= "T_RotationalOffsetType" nested="true">
+    <member name="A_pitchOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_rollOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_yawOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+  </struct>
+  <typedef name="T_LongitudeType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+  <struct name= "T_Coordinate2DType" nested="true">
+    <member name="A_latitude" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LatitudeType"/>
+    <member name="A_longitude" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongitudeType"/>
+  </struct>
+  <struct name= "T_LinearSpeed3DType" nested="true">
+    <member name="A_xSpeed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+    <member name="A_ySpeed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+    <member name="A_zSpeed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+  </struct>
+  <struct name= "T_LinearOffsetType" nested="true">
+    <member name="A_xOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+    <member name="A_yOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+    <member name="A_zOffset" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DistanceInMetresType"/>
+  </struct>
+  <typedef name="T_BearingType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+  <typedef name="T_VolumeInCubicMetresType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_VoltageInVoltsType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_TemperatureInDegreesKelvinType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_LinearVelocity2DType" nested="true">
+    <member name="A_heading" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AngleInRadiansType"/>
+    <member name="A_speed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+  </struct>
+  <typedef name="T_PressureInPascalType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_PowerInWattsType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_PercentageType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_ChargeInCoulombsType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_FrequencyInHertzType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <typedef name="T_FlowRateInCubicMetresPerSecType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <struct name= "T_Coordinate3DType" nested="true">
+    <member name="A_altitude" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_AltitudeType"/>
+    <member name="A_latitude" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LatitudeType"/>
+    <member name="A_longitude" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongitudeType"/>
+  </struct>
+  <typedef name="T_CurrentInAmpsType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+  <enum name="T_CommandResponseType">
+    <enumerator name="L_CommandResponseType_Command_Failed"/>
+    <enumerator name="L_CommandResponseType_Command_Not_Available"/>
+    <enumerator name="L_CommandResponseType_Command_Not_Recognised"/>
+    <enumerator name="L_CommandResponseType_Resource_Control_Failure"/>
+  </enum> 
+</module>
+</types>
+</dds>

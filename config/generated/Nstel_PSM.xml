@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Program Files/rti_connext_dds-7.5.0/bin/../resource/app/app_support/rtiddsgen/schema/rti_dds_profiles.xsd">
+<types>
+<include file="LDM_Common.xml"/>
+<include file="Usage_And_Condition_Monitoring_PSM.xml"/>
+<module name="P_NSTEL">
+  <typedef name="T_Float" type="float32"/>
+  <enum name="T_OperationModeType">
+    <enumerator name="L_OperationModeType_NORMAL"/>
+    <enumerator name="L_OperationModeType_EMER_GENCY"/>
+    <enumerator name="L_OperationModeType_MANUAL"/>
+  </enum> 
+  <enum name="T_OnOffType">
+    <enumerator name="L_OnOffType_ON"/>
+    <enumerator name="L_OnOffType_OFF"/>
+  </enum> 
+  <enum name="T_TargetAllotType">
+    <enumerator name="L_TargetAllotType_ALLOT"/>
+    <enumerator name="L_TargetAllotType_ETC"/>
+  </enum> 
+  <enum name="T_ArmPositionLockType">
+    <enumerator name="L_ArmPositionLockType_RELEASE"/>
+    <enumerator name="L_ArmPositionLockType_LOCK"/>
+  </enum> 
+  <enum name="T_MainCannonReturnType">
+    <enumerator name="L_MainCannonReturnType_RELEASE"/>
+    <enumerator name="L_MainCannonReturnType_COMMAND"/>
+  </enum> 
+  <enum name="T_MainCannonFixType">
+    <enumerator name="L_MainCannonFixType_RELEASE"/>
+    <enumerator name="L_MainCannonFixType_COMMAND"/>
+  </enum> 
+  <enum name="T_MainCannonFixStatusType">
+    <enumerator name="L_MainCannonFixStatusType_NORMAL"/>
+    <enumerator name="L_MainCannonFixStatusType_FIX"/>
+  </enum> 
+  <enum name="T_MainCannonReturnStatusType">
+    <enumerator name="L_MainCannonReturnStatusType_RUNNING"/>
+    <enumerator name="L_MainCannonReturnStatusType_COMPLETE"/>
+  </enum> 
+  <enum name="T_ArmSafetyMainCannonLock">
+    <enumerator name="L_ArmSafetyMainCannonLock_NORMAL"/>
+    <enumerator name="L_ArmSafetyMainCannonLock_COMPLETE"/>
+  </enum> 
+  <enum name="T_EquipOpenLockType">
+    <enumerator name="L_EquipOpenLockType_LOCK"/>
+    <enumerator name="L_EquipOpenLockType_OPEN"/>
+  </enum> 
+  <enum name="T_ChangingStatusType">
+    <enumerator name="L_ChangingStatusType_NORMAL"/>
+    <enumerator name="L_ChangingStatusType_DISCHARGE"/>
+  </enum> 
+  <enum name="T_DekClearanceType">
+    <enumerator name="L_DekClearanceType_OUTSIDE"/>
+    <enumerator name="L_DekClearanceType_RUNNING"/>
+  </enum> 
+  <enum name="T_ArmPositionType">
+    <enumerator name="L_ArmPositionType_NORMAL"/>
+    <enumerator name="L_ArmPositionType_MANUAL"/>
+  </enum> 
+  <enum name="T_CannonDrivingDeviceShutdownType">
+    <enumerator name="L_CannonDrivingDeviceShutdownType_UNKNOWN"/>
+    <enumerator name="L_CannonDrivingDeviceShutdownType_SHUTDOWN"/>
+  </enum> 
+  <struct name= "C_Cannon_Driving_Device_resultBIT">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_runBITEntity_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_type" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_BITType"/>
+    <member name="A_BITRunning" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_baseGyro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_topForwardGryro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_vehicleForwardGyro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_power_Controller" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_energyStorage" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_directPower" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_cableLoop" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+  </struct>
+  <struct name= "C_Cannon_Driving_Device_CBIT">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_runBITEntity_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_type" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_BITType"/>
+    <member name="A_upDownMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_baseGyro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_topForwardGryro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_vehicleForwardGyro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_powerController" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_energyStorage" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_directPower" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_cableLoop" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownPark" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_round_Park" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_mainCannon_Lock" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_commFault" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+  </struct>
+  <struct name= "C_Cannon_Driving_Device_PBIT">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_runBITEntity_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_type" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_BITType"/>
+    <member name="A_BITRunning" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundMotor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_upDownAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_roundAmp" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_baseGyro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_topForwardGryro" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_vehicleForwardGyroi" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_powerController" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_energyStorage" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_directPower" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_cableLoop" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+  </struct>
+  <struct name= "C_Vehicle_Speed">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_speed" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_SpeedInMetresPerSecType"/>
+  </struct>
+  <struct name= "C_Cannon_Actuator_Control">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_drivingPosition" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_upDownPosition" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_roundAngleVelocity" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_upDownAngleVelocity" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_cannonUpDownAngle" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_topRelativeAngle" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_operationMode" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_OperationModeType"/>
+    <member name="A_parm" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_OnOffType"/>
+    <member name="A_targetDesingation" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_TargetAllotType"/>
+    <member name="A_autoArmPosition" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ArmPositionLockType"/>
+    <member name="A_manualArmPosition" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ArmPositionLockType"/>
+    <member name="A_mainCannonRestore" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_MainCannonReturnType"/>
+    <member name="A_manCannonFix" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_MainCannonFixType"/>
+    <member name="A_closeEquipOpenStatus" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_EquipOpenLockType"/>
+  </struct>
+  <struct name= "C_Cannon_Actuator_Signal">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_azAngle" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_e1AngleVelocity" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_energyStorage" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ChangingStatusType"/>
+    <member name="A_mainCannonFixStatus" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_MainCannonFixStatusType"/>
+    <member name="A_deckClearance" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_DekClearanceType"/>
+    <member name="A_autoArmPositionComplement" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ArmPositionType"/>
+    <member name="A_manualArmPositionComple" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ArmPositionType"/>
+    <member name="A_mainCannonRestoreComplement" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_MainCannonReturnStatusType"/>
+    <member name="A_armSafetyMainCannonLock" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_ArmSafetyMainCannonLock"/>
+    <member name="A_shutdown" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_CannonDrivingDeviceShutdownType"/>
+    <member name="A_roundGyro" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+    <member name="A_upDownGyro" type="nonBasic"  nonBasicTypeName= "P_NSTEL::T_Float"/>
+  </struct>
+</module>
+</types>
+</dds>

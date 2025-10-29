@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Agent.UI.Wpf.Services
+namespace Tools.SampleRunner.Services
 {
     /// <summary>
     /// 간단한 XML 타입 스키마 제공자. config/generated/*.xml 파일에서 struct와 그 멤버를 파싱하여 TypeSchema를 반환합니다.
@@ -20,9 +20,9 @@ namespace Agent.UI.Wpf.Services
             public int? StringMax { get; init; }
         }
 
-    private readonly Dictionary<string, TypedefInfo> _typedefs = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, List<string>> _enums = new(StringComparer.Ordinal);
-    private HashSet<string> _allStructNames = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TypedefInfo> _typedefs = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<string>> _enums = new(StringComparer.Ordinal);
+        private HashSet<string> _allStructNames = new(StringComparer.Ordinal);
 
         public XmlTypeSchemaProvider(string configRoot)
         {
@@ -124,60 +124,12 @@ namespace Agent.UI.Wpf.Services
 
                                 string? resolvedType = null; TypedefInfo? tdInfo = null;
                                 if (!string.IsNullOrWhiteSpace(effectiveType)) ResolveTypedef(effectiveType, out resolvedType, out tdInfo);
-
-                                // Also attempt to find the typedef entry that directly corresponds to the
-                                // member's declared type (before resolving through the chain). Many typedefs
-                                // are chains (e.g. T_ShortString -> T_Char) and the SequenceMax is stored on
-                                // the intermediate typedef (T_ShortString). ResolveTypedef currently returns
-                                // the final typedef info for the underlying type; so look up the member
-                                // typedef separately to get its declared SequenceMax/StringMax.
-                                TypedefInfo? memberTdInfo = null;
-                                if (!string.IsNullOrWhiteSpace(effectiveType))
-                                {
-                                    if (!_typedefs.TryGetValue(effectiveType, out memberTdInfo))
-                                    {
-                                        var idxMember = effectiveType.IndexOf("::");
-                                        if (idxMember >= 0)
-                                        {
-                                            var shortMember = effectiveType.Substring(idxMember + 2);
-                                            _typedefs.TryGetValue(shortMember, out memberTdInfo);
-                                        }
-                                    }
-                                }
                                 var finalType = resolvedType ?? effectiveType;
 
                                 List<string>? enumVals = null;
-                                // If the member contains inline enum literals, capture them. Otherwise, try to look up
-                                // enum values collected in the first pass by type name (full or short form).
                                 if (m.Elements().Any(x => x.Name.LocalName == "enum" || x.Name.LocalName == "enumerator"))
                                 {
-                                    enumVals = m.Elements().Where(x => x.Name.LocalName == "enum" || x.Name.LocalName == "enumerator").Select(x => x.Attribute("name")?.Value ?? x.Value).Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
-                                }
-
-                                // If not inline, try provider-collected enums by finalType or effectiveType short name
-                                if ((enumVals == null || enumVals.Count == 0) && !string.IsNullOrWhiteSpace(effectiveType))
-                                {
-                                    // prefer resolved finalType if available
-                                    var lookup = finalType ?? effectiveType;
-                                    if (!string.IsNullOrWhiteSpace(lookup))
-                                    {
-                                        if (!_enums.TryGetValue(lookup, out enumVals))
-                                        {
-                                            var idx2 = lookup.IndexOf("::");
-                                            if (idx2 >= 0)
-                                            {
-                                                var shortn2 = lookup.Substring(idx2 + 2);
-                                                if (!_enums.TryGetValue(shortn2, out enumVals))
-                                                {
-                                                    enumVals = null;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                enumVals = null;
-                                            }
-                                        }
-                                    }
+                                    enumVals = m.Elements().Where(x => x.Name.LocalName == "enum" || x.Name.LocalName == "enumerator").Select(x => x.Value).Where(v => v != null).ToList();
                                 }
 
                                 if (string.IsNullOrWhiteSpace(fname)) continue;
@@ -194,21 +146,6 @@ namespace Agent.UI.Wpf.Services
 
                                 if (int.TryParse(seqMax, out var u)) upperBound = u;
                                 if (int.TryParse(strMax, out var ml)) maxLen = ml;
-                                // If the member type is a typedef with string/sequence limits, use those when
-                                // the member itself didn't specify explicit limits.
-                                // Prefer explicit string/sequence limits on the member; otherwise use the
-                                // typedef-declared limits from the member typedef (memberTdInfo) or the
-                                // resolved underlying typedef (tdInfo) as a fallback.
-                                if (maxLen == null)
-                                {
-                                    if (tdInfo?.StringMax != null) maxLen = tdInfo.StringMax;
-                                    if (memberTdInfo?.StringMax != null) maxLen = memberTdInfo.StringMax;
-                                }
-                                if (upperBound == null)
-                                {
-                                    if (tdInfo?.SequenceMax != null) upperBound = tdInfo.SequenceMax;
-                                    if (memberTdInfo?.SequenceMax != null) upperBound = memberTdInfo.SequenceMax;
-                                }
                                 if (!string.IsNullOrWhiteSpace(isKeyAttr)) isKey = true;
 
                                 if (string.IsNullOrWhiteSpace(finalType))
@@ -233,13 +170,6 @@ namespace Agent.UI.Wpf.Services
                                             isSeqStr = true;
                                             isSeqPrim = false;
                                             seqElemType = "char";
-                                            // If this sequence represents a string typedef (char sequence) and the typedef
-                                            // declares a sequenceMaxLength, propagate it to the field's MaxLen so the
-                                            // sample builder can truncate sample strings appropriately.
-                                            if (maxLen == null && tdInfo?.SequenceMax != null)
-                                            {
-                                                maxLen = tdInfo.SequenceMax;
-                                            }
                                         }
                                         else
                                         {
@@ -278,13 +208,6 @@ namespace Agent.UI.Wpf.Services
                                         }
                                         typeVal = finalType ?? effectiveType;
                                     }
-                                }
-
-                                // If the inferred kind is string and the typedef provides a sequence max, use that
-                                // as MaxLen when no explicit maxLen exists. (covers typedefs like T_ShortString)
-                                if (kind == "string" && maxLen == null && tdInfo?.SequenceMax != null)
-                                {
-                                    maxLen = tdInfo.SequenceMax;
                                 }
 
                                 var newField = new TypeSchema.Field

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Program Files/rti_connext_dds-7.5.0/bin/../resource/app/app_support/rtiddsgen/schema/rti_dds_profiles.xsd">
+<types>
+<struct name= "C_AlarmMsg">
+  <member name="level" type="int32"/>
+  <member name="text" stringMaxLength="255" type="string"/>
+</struct>
+</types>
+</dds>

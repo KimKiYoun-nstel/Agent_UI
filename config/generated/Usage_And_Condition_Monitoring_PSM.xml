@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Program Files/rti_connext_dds-7.5.0/bin/../resource/app/app_support/rtiddsgen/schema/rti_dds_profiles.xsd">
+<types>
+<include file="LDM_Common.xml"/>
+<module name="P_UCMS">
+  <enum name="T_Monitored_Entity_StateType">
+    <enumerator name="L_Monitored_Entity_StateType_ON"/>
+    <enumerator name="L_Monitored_Entity_StateType_OFF"/>
+  </enum> 
+  <enum name="T_BITType">
+    <enumerator name="L_BITType_C_BIT"/>
+    <enumerator name="L_BITType_P_BIT"/>
+    <enumerator name="L_BITType_I_BIT"/>
+  </enum> 
+  <enum name="T_HealthStatus">
+    <enumerator name="L_HealthStatus_OPERATIONAL"/>
+    <enumerator name="L_HealthStatus_DEGRADED"/>
+    <enumerator name="L_HealthStatus_NOT_OPERATIONAL"/>
+    <enumerator name="L_HealthStatus_UNKNOWN"/>
+  </enum> 
+  <enum name="T_MonitoredCharacteristicKind">
+    <enumerator name="L_MonitoredCharacteristicKind_INSTANT"/>
+    <enumerator name="L_MonitoredCharacteristicKind_CUMULATIVE"/>
+  </enum> 
+  <enum name="T_MonitoredDataWarningLevel">
+    <enumerator name="L_MonitoredDataWarningLevel_NO_WARNING"/>
+    <enumerator name="L_MonitoredDataWarningLevel_PRE_WARNING"/>
+    <enumerator name="L_MonitoredDataWarningLevel_WARNING"/>
+  </enum> 
+  <enum name="T_ThresholdType">
+    <enumerator name="L_ThresholdType_MIN"/>
+    <enumerator name="L_ThresholdType_MAX"/>
+  </enum> 
+  <struct name= "C_Failure_Event">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_eventOccurenceDate" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_standardFaultCode" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_proprietaryFaultCode" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_predictedFailure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureDescription" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_causeDescription" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_operationalConsequenceDescription" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_operatorActionDescription" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_maintenanceActionDescription" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_complementaryInformation" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_eventDocumentationURI" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_monitoredEntity_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Installed_Software">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_serialNumber" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_version" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_configuration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_subSystem_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Monitored_Characteristic">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_value" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_monitoredEntity_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_specification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_thresholdExceedenceEvents_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Monitored_Characteristic_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_unit" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_descriptor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_LongString"/>
+    <member name="A_publishingIntervalInSeconds" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_characteristicKind" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_MonitoredCharacteristicKind"/>
+    <member name="A_specifiedMonitoredCharacteristic_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_thresholds_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Monitored_Entity_runBIT">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_type" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_BITType"/>
+  </struct>
+  <struct name= "C_Monitored_Entity">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_healthStatus" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_HealthStatus"/>
+    <member name="A_currentState" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_Monitored_Entity_StateType"/>
+    <member name="A_specification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_monitoredCharacteristics_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_failureEvents_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_installedSoftware_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_preventativeMaintenanceRecomendedEvents_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Monitored_Entity_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_cumulativeMonitoredCharacteristicsOutputSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureStandardFaultCodeSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureProprietaryFaultCodeSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureDescriptionSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureCauseDescriptionSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureOperationalConsequenceDescriptionSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureOperatorActionDescriptionSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureMaintenanceActionDescriptionSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureComplementaryInformationSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_failureDocumentationURISupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_installationDateTime" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_specifiedMonitoredEntities_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Preventive_Maintenance_Recommended_Event">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_dataDescriptor" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_MediumString"/>
+    <member name="A_dataUnit" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_dataValue" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_preventiveMaintenanceThreshold" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_occurrenceDateTime" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_subSystem_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Threshold">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_name" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_MediumString"/>
+    <member name="A_value" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_type" type="nonBasic"  nonBasicTypeName= "P_UCMS::T_ThresholdType"/>
+    <member name="A_maxDuration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_maxNumberOfRepetitions" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_conditionedThresholds_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_conditioningThreshold_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_concernedCharacteristic_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_specification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_exceedenceEvents_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_conditionongThreshold_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_conditionedThreshold_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Threshold_Exceedence_Event">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_eventOccurenceDate" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_measuredValue" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Double"/>
+    <member name="A_inducedEvents_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_inducingEvent_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_concernedCharacteristic_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_exceededThreshold_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Threshold_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_valueThresholdSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_durationThresholdSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_repetitionsThresholdSupported" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_specifiedThreshold_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+</module>
+</types>
+</dds>

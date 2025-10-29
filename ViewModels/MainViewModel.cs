@@ -405,7 +405,14 @@ namespace Agent.UI.Wpf.ViewModels
                     }
                 }
             }, null, ex => Log($"ToggleConnectionCommand exception: {ex.Message}"));
-            BrowseConfigCommand = new RelayCommand(BrowseConfig);
+            BrowseConfigCommand = new RelayCommand(() =>
+            {
+                try
+                {
+                    if (System.OperatingSystem.IsWindows()) BrowseConfigAction?.Invoke();
+                }
+                catch { }
+            });
             LoadQosFromFileCommand = new RelayCommand(LoadQosFromFile);
             ReloadConfigCommand = new RelayCommand(ReloadConfig);
             CreateParticipantCommand = new AsyncRelayCommand(async () =>
@@ -1236,22 +1243,23 @@ namespace Agent.UI.Wpf.ViewModels
             catch { }
         }
 
-        private void BrowseConfig()
-        {
-            // Use FolderBrowserDialog so users can pick a folder directly
-            using var dlg = new System.Windows.Forms.FolderBrowserDialog
-            {
-                Description = "Select your config directory",
-                SelectedPath = ConfigRoot
-            };
+    /// <summary>
+    /// 뷰에서 폴더 선택 동작을 위임받아 호출할 수 있는 훅입니다.
+    /// View(MainWindow)에서 Windows 전용 FolderBrowserDialog를 처리하고 이 Action을 호출하도록 설정합니다.
+    /// </summary>
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public System.Action? BrowseConfigAction { get; set; }
 
-            var res = dlg.ShowDialog();
-            if (res == System.Windows.Forms.DialogResult.OK || res == System.Windows.Forms.DialogResult.Yes)
-            {
-                ConfigRoot = dlg.SelectedPath;
-                Log($"Config set: {ConfigRoot}");
-                ReloadConfig();
-            }
+        /// <summary>
+        /// 외부(뷰)에서 선택한 경로를 ViewModel에 적용하고 구성 재로딩을 수행합니다.
+        /// </summary>
+        /// <param name="path">선택된 구성 폴더 경로</param>
+        public void ApplyConfigRoot(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return;
+            ConfigRoot = path;
+            Log($"Config set: {ConfigRoot}");
+            ReloadConfig();
         }
 
         private void ReloadConfig()

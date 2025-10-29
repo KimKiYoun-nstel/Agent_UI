@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Program Files/rti_connext_dds-7.5.0/bin/../resource/app/app_support/rtiddsgen/schema/rti_dds_profiles.xsd">
+<types>
+<include file="LDM_Common.xml"/>
+<module name="P_Alarms_PSM">
+  <enum name="T_Actual_Alarm_StateType">
+    <enumerator name="L_Actual_Alarm_StateType_Unacknowledged"/>
+    <enumerator name="L_Actual_Alarm_StateType_Acknowledged"/>
+    <enumerator name="L_Actual_Alarm_StateType_Resolved"/>
+    <enumerator name="L_Actual_Alarm_StateType_Destroyed"/>
+    <enumerator name="L_Actual_Alarm_StateType_Cleared"/>
+  </enum> 
+  <enum name="T_Alarm_Condition_Specification_StateType">
+    <enumerator name="L_Alarm_Condition_Specification_StateType_condition_overridden"/>
+    <enumerator name="L_Alarm_Condition_Specification_StateType_condition_not_overridden"/>
+  </enum> 
+  <enum name="T_AlarmCategoryType">
+    <enumerator name="L_AlarmCategoryType_Warning"/>
+    <enumerator name="L_AlarmCategoryType_Caution"/>
+    <enumerator name="L_AlarmCategoryType_Advisory"/>
+  </enum> 
+  <enum name="T_MissionStateType">
+    <enumerator name="L_MissionStateType_Driving"/>
+    <enumerator name="L_MissionStateType_Engagement"/>
+    <enumerator name="L_MissionStateType_Reconnaissance"/>
+  </enum> 
+  <struct name= "C_Crew_Role_In_Mission_State">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_crewRoleName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_relevantAlarmType_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_missionState_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Alarm_Category_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_alarmCategoryName" type="nonBasic"  nonBasicTypeName= "P_Alarms_PSM::T_AlarmCategoryType"/>
+    <member name="A_alarmCategoryAbbreviation" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_isAutoAcknowledged" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_automaticAcknowledgeTimeout" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DurationType"/>
+    <member name="A_hideOnAcknowledge" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_isRepeated" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_repeatTimeout" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DurationType"/>
+    <member name="A_categorisedConditionSpecification_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_notifyingToneSpecification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_alarmCategory_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Mission_State_setMissionState">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_missionState" type="nonBasic"  nonBasicTypeName= "P_Alarms_PSM::T_MissionStateType"/>
+    <member name="A_missionStateName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Mission_State">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_missionState" type="nonBasic"  nonBasicTypeName= "P_Alarms_PSM::T_MissionStateType"/>
+    <member name="A_missionStateName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_crewRoleInMissionState_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_ownPlatform_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Actual_Alarm_acknowledgeAlarm">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Actual_Alarm">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_dateTimeRaised" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_alarmState" type="nonBasic"  nonBasicTypeName= "P_Alarms_PSM::T_Actual_Alarm_StateType"/>
+    <member name="A_raisingCondition_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_alarmCategory_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Alarm_Condition_Specification_raiseAlarmCondition">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Alarm_Condition_Specification_isOfInterestToCrewRole">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_crewRole" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Alarm_Condition_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_alarmConditionCategory" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_alarmConditionName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_MediumString"/>
+    <member name="A_hasMultipleInstances" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_overrideState" type="nonBasic"  nonBasicTypeName= "P_Alarms_PSM::T_Alarm_Condition_Specification_StateType"/>
+    <member name="A_actualAlarmCondition_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_alarmCategory_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_interestedRole_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Tone_Specification">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_toneFrequency" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_FrequencyInHertzType"/>
+    <member name="A_toneModulationType" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_toneRepetitionFrequency" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_FrequencyInHertzType"/>
+    <member name="A_toneMaxVolume" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_PowerInWattsType"/>
+    <member name="A_alarmCategorySpecification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Own_Platform">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_activeAlarmsExist" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_possibleMissionState_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Actual_Alarm_Condition_unoverrideAlarmCondition">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Actual_Alarm_Condition_overrideAlarmCondition">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Actual_Alarm_Condition_clearAlarmCondition">
+    <member name="A_recipientID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_referenceNum" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int32"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_componentName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_subsystemName" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_measure" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+    <member name="A_nature" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_ShortString"/>
+  </struct>
+  <struct name= "C_Actual_Alarm_Condition">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_alarmSourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_dateTimeRaised" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_isOverridden" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Boolean"/>
+    <member name="A_specification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_raisedActualAlarm_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+  <struct name= "C_Alarm_Category">
+    <member name="A_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType" key="true"/>
+    <member name="A_timeOfDataGeneration" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_DateTimeType"/>
+    <member name="A_activeAlarmCount" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int16"/>
+    <member name="A_unacknowledgedAlarmCount" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_Int16"/>
+    <member name="A_categorisedActualAlarm_sourceID" sequenceMaxLength="100" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+    <member name="A_alarmCategorySpecification_sourceID" type="nonBasic"  nonBasicTypeName= "P_LDM_Common::T_IdentifierType"/>
+  </struct>
+</module>
+</types>
+</dds>

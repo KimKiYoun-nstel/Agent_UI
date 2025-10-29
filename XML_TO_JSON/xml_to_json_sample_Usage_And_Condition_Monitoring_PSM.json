@@ -1,0 +1,307 @@
+{
+  "C_Failure_Event": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_eventOccurenceDate": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_standardFaultCode": 1,
+    "A_proprietaryFaultCode": "proprietaryFaultCode",
+    "A_predictedFailure": false,
+    "A_failureDescription": "failureDescription",
+    "A_causeDescription": "causeDescription",
+    "A_operationalConsequenceDescription": "operationalConsequenceDescription",
+    "A_operatorActionDescription": "operatorActionDescription",
+    "A_maintenanceActionDescription": "maintenanceActionDescription",
+    "A_complementaryInformation": "complementaryInformation",
+    "A_eventDocumentationURI": "eventDocumentationURI",
+    "A_monitoredEntity_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    }
+  },
+  "C_Installed_Software": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_serialNumber": 1,
+    "A_version": 1,
+    "A_configuration": 1,
+    "A_subSystem_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    }
+  },
+  "C_Monitored_Characteristic": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_value": 1,
+    "A_monitoredEntity_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_specification_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_thresholdExceedenceEvents_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ]
+  },
+  "C_Monitored_Characteristic_Specification": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_unit": "unit",
+    "A_descriptor": "descriptor",
+    "A_publishingIntervalInSeconds": 1,
+    "A_characteristicKind": "L_MonitoredCharacteristicKind_INSTANT",
+    "A_specifiedMonitoredCharacteristic_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_thresholds_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    }
+  },
+  "C_Monitored_Entity_runBIT": {
+    "A_recipientID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_referenceNum": 1,
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_type": "L_BITType_C_BIT"
+  },
+  "C_Monitored_Entity": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_healthStatus": "L_HealthStatus_OPERATIONAL",
+    "A_currentState": "L_Monitored_Entity_StateType_ON",
+    "A_specification_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_monitoredCharacteristics_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_failureEvents_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_installedSoftware_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_preventativeMaintenanceRecomendedEvents_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ]
+  },
+  "C_Monitored_Entity_Specification": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_cumulativeMonitoredCharacteristicsOutputSupported": false,
+    "A_failureStandardFaultCodeSupported": false,
+    "A_failureProprietaryFaultCodeSupported": false,
+    "A_failureDescriptionSupported": false,
+    "A_failureCauseDescriptionSupported": false,
+    "A_failureOperationalConsequenceDescriptionSupported": false,
+    "A_failureOperatorActionDescriptionSupported": false,
+    "A_failureMaintenanceActionDescriptionSupported": false,
+    "A_failureComplementaryInformationSupported": false,
+    "A_failureDocumentationURISupported": false,
+    "A_installationDateTime": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_specifiedMonitoredEntities_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ]
+  },
+  "C_Preventive_Maintenance_Recommended_Event": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_dataDescriptor": "dataDescriptor",
+    "A_dataUnit": "dataUnit",
+    "A_dataValue": 1,
+    "A_preventiveMaintenanceThreshold": 1,
+    "A_occurrenceDateTime": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_subSystem_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    }
+  },
+  "C_Threshold": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_name": "name",
+    "A_value": 1,
+    "A_type": "L_ThresholdType_MIN",
+    "A_maxDuration": 1,
+    "A_maxNumberOfRepetitions": 1,
+    "A_conditionedThresholds_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_conditioningThreshold_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_concernedCharacteristic_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_specification_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_exceedenceEvents_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_conditionongThreshold_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_conditionedThreshold_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ]
+  },
+  "C_Threshold_Exceedence_Event": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_eventOccurenceDate": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_measuredValue": 1,
+    "A_inducedEvents_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ],
+    "A_inducingEvent_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_concernedCharacteristic_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_exceededThreshold_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    }
+  },
+  "C_Threshold_Specification": {
+    "A_sourceID": {
+      "A_resourceId": 1,
+      "A_instanceId": 1
+    },
+    "A_timeOfDataGeneration": {
+      "A_second": 1,
+      "A_nanoseconds": 1
+    },
+    "A_valueThresholdSupported": false,
+    "A_durationThresholdSupported": false,
+    "A_repetitionsThresholdSupported": false,
+    "A_specifiedThreshold_sourceID": [
+      {
+        "A_resourceId": 1,
+        "A_instanceId": 1
+      }
+    ]
+  }
+}

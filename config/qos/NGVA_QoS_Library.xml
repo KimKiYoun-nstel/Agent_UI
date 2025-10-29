@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dds xmlns="http://www.rti.com/schema/ndds/5.3.1">
+
+  <qos_library name="NGVA_QoS_Library">
+
+    <!-- 1. 제어/명령: 저지연, 유실 불가 -->
+    <qos_profile name="control_low_latency_reliable" is_default_qos="true">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+        <deadline><period><sec>0</sec><nanosec>100000000</nanosec></period></deadline>
+        <latency_budget><duration><sec>0</sec><nanosec>3000000</nanosec></duration></latency_budget>
+        <ownership><kind>EXCLUSIVE_OWNERSHIP_QOS</kind></ownership>
+        <transport_priority><value>100</value></transport_priority>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 2. 상태 동기화: 최근값 유지, 합류 보전 -->
+    <qos_profile name="state_reliable_transient">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 3. 미션/설정: 중요, 늦게 합류해도 전달 -->
+    <qos_profile name="config_mission_transient">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 4. 알람/이벤트: 유실 불가, 이력 유지 -->
+    <qos_profile name="event_alarm_strict">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_ALL_HISTORY_QOS</kind></history>
+        <deadline><period><sec>0</sec><nanosec>500000000</nanosec></period></deadline>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_ALL_HISTORY_QOS</kind></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 5. 스트리밍: 영상/센서, 유실 허용 -->
+    <qos_profile name="stream_best_effort">
+      <datawriter_qos>
+        <reliability><kind>BEST_EFFORT_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+        <transport_priority><value>120</value></transport_priority>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>BEST_EFFORT_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 6. 헬스/로그: 축적 -->
+    <qos_profile name="telemetry_reliable_log">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_ALL_HISTORY_QOS</kind></history>
+        <resource_limits>
+          <max_samples>10000</max_samples>
+          <max_instances>1000</max_instances>
+          <max_samples_per_instance>10000</max_samples_per_instance>
+        </resource_limits>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>VOLATILE_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_ALL_HISTORY_QOS</kind></history>
+      </datareader_qos>
+    </qos_profile>
+
+    <!-- 7. 내비/경로: 주기적, 정확성 중요 -->
+    <qos_profile name="nav_reliable_transient">
+      <datawriter_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+        <deadline><period><sec>0</sec><nanosec>200000000</nanosec></period></deadline>
+      </datawriter_qos>
+      <datareader_qos>
+        <reliability><kind>RELIABLE_RELIABILITY_QOS</kind></reliability>
+        <durability><kind>TRANSIENT_LOCAL_DURABILITY_QOS</kind></durability>
+        <history><kind>KEEP_LAST_HISTORY_QOS</kind><depth>1</depth></history>
+        <deadline><period><sec>0</sec><nanosec>200000000</nanosec></period></deadline>
+      </datareader_qos>
+    </qos_profile>
+
+  </qos_library>
+</dds>
