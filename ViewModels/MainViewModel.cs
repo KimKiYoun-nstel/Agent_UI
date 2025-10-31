@@ -273,8 +273,39 @@ namespace Agent.UI.Wpf.ViewModels
                         string json;
                         try
                         {
-                            if (e.Data is string s) json = s;
-                            else json = System.Text.Json.JsonSerializer.Serialize(e.Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
+                            // 수신 데이터 통일 처리:
+                            // 1) 만약 e.Data가 문자열(예: 과거 'data.text' 계약 때문에 전달된 compact JSON 문자열)이라면 파싱을 시도하여 내부 객체로 변환
+                            // 2) e.Data가 IDictionary이고 "text" 키를 갖고 있다면 그 값을 JSON 문자열로 보고 파싱을 시도
+                            object dataToRender = e.Data!;
+
+                            if (e.Data is string s)
+                            {
+                                try
+                                {
+                                    var parsed = System.Text.Json.JsonSerializer.Deserialize<object>(s);
+                                    if (parsed != null) dataToRender = parsed;
+                                    else dataToRender = s;
+                                }
+                                catch
+                                {
+                                    dataToRender = s; // parse 실패 시 원문 문자열 유지
+                                }
+                            }
+                            else if (e.Data is System.Collections.IDictionary dict && dict.Contains("text"))
+                            {
+                                try
+                                {
+                                    var txt = dict["text"] as string;
+                                    if (!string.IsNullOrWhiteSpace(txt))
+                                    {
+                                        var parsed2 = System.Text.Json.JsonSerializer.Deserialize<object>(txt);
+                                        if (parsed2 != null) dataToRender = parsed2;
+                                    }
+                                }
+                                catch { /* ignore parsing errors, keep original map */ }
+                            }
+
+                            json = System.Text.Json.JsonSerializer.Serialize(dataToRender, new System.Text.Json.JsonSerializerOptions { WriteIndented = false });
                         }
                         catch
                         {
@@ -460,7 +491,7 @@ namespace Agent.UI.Wpf.ViewModels
             {
                 try
                 {
-                    var req = new Req { Op = "clear", Target = "dds_entities", TargetExtra = null, Args = null, Data = null };
+                    var req = new Req { Op = "clear", Target = new System.Collections.Generic.Dictionary<string, object?> { ["kind"] = "dds_entities" }, TargetExtra = null, Args = null, Data = null };
                     AddOutTraffic("clear", req);
                     using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
                     var rsp = await _agent.RequestAsync(req, cts.Token);
@@ -750,26 +781,26 @@ namespace Agent.UI.Wpf.ViewModels
                     Require(d >= 0, "Domain 필요");
                     Require(!IsNullOrWhite(PublisherName), "Publisher 이름 필요");
                     var tname = !IsNullOrWhite(TopicName) ? TopicName : Topic;
-                    var typename = !IsNullOrWhite(TypeName) ? TypeName : SelectedType;
                     Require(!IsNullOrWhite(tname), "Topic 필요");
-                    Require(!IsNullOrWhite(typename), "Type 필요 (예: C_*)");
 
                     // 1) Payload JSON 파싱 및 compact 문자열 생성
                     var jsonObj = ParseJsonOrThrow(Payload);
                     var compact = ToCompactJsonString(jsonObj);
 
-                    // 2) Req 작성 (Gateway 계약: data.text = JSON 문자열)
+                    // 2) Req 작성: UI는 이제 JSON 내용을 객체 형태로 전송합니다 (서버와 동기화 예정).
+                    //    과거 계약(data.text = JSON 문자열)은 수신측에서 파싱하여 호환 처리합니다.
                     var qos = BuildQos();
                     var targetExtra = new System.Collections.Generic.Dictionary<string, object?> {
-                        ["topic"] = tname,
-                        ["type"] = typename
+                        ["topic"] = tname
                     };
                     var args = new System.Collections.Generic.Dictionary<string, object?> {
                         ["domain"] = d,
                         ["publisher"] = PublisherName,
                         ["qos"] = qos
                     };
-                    var data = new { text = compact };
+                    // 이전에는 compact한 JSON 문자열을 data.text로 감싸서 보냈지만,
+                    // 이제는 파싱된 객체 자체를 Data로 넣어 전송합니다.
+                    var data = jsonObj;
 
                     var req = new Req
                     {
@@ -1187,6 +1218,31 @@ namespace Agent.UI.Wpf.ViewModels
             }
             var prettyOut = json;
             try { prettyOut = System.Text.Json.JsonSerializer.Serialize(System.Text.Json.JsonSerializer.Deserialize<object>(json), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+            // If the payload follows the gateway contract where data.text contains a JSON string,
+            // try to parse and embed that inner JSON so the UI shows a readable object instead of an escaped string.
+            try
+            {
+                var node = System.Text.Json.Nodes.JsonNode.Parse(json);
+                if (node != null && node["data"] is System.Text.Json.Nodes.JsonObject dataObj && dataObj["text"] is System.Text.Json.Nodes.JsonValue txtVal)
+                {
+                    var txt = txtVal.GetValue<string>() ?? string.Empty;
+                    var trimmed = txt.TrimStart();
+                    if (!string.IsNullOrWhiteSpace(trimmed) && (trimmed.StartsWith("{") || trimmed.StartsWith("[")))
+                    {
+                        try
+                        {
+                            var inner = System.Text.Json.Nodes.JsonNode.Parse(txt);
+                            if (inner != null)
+                            {
+                                dataObj["text"] = inner;
+                                prettyOut = node.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                            }
+                        }
+                        catch { /* not valid inner JSON; ignore */ }
+                    }
+                }
+            }
+            catch { }
             var rawTruncated = Services.Logger.TruncateUtf8(json);
             Traffic.Add(new TrafficItem
             {
@@ -1215,6 +1271,30 @@ namespace Agent.UI.Wpf.ViewModels
             }
             var prettyIn = json;
             try { prettyIn = System.Text.Json.JsonSerializer.Serialize(System.Text.Json.JsonSerializer.Deserialize<object>(json), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }); } catch { }
+            // If payload contains data.text which itself is a JSON string, pretty-print the inner JSON for display
+            try
+            {
+                var node = System.Text.Json.Nodes.JsonNode.Parse(json);
+                if (node != null && node["data"] is System.Text.Json.Nodes.JsonObject dataObj && dataObj["text"] is System.Text.Json.Nodes.JsonValue txtVal)
+                {
+                    var txt = txtVal.GetValue<string>() ?? string.Empty;
+                    var trimmed = txt.TrimStart();
+                    if (!string.IsNullOrWhiteSpace(trimmed) && (trimmed.StartsWith("{") || trimmed.StartsWith("[")))
+                    {
+                        try
+                        {
+                            var inner = System.Text.Json.Nodes.JsonNode.Parse(txt);
+                            if (inner != null)
+                            {
+                                dataObj["text"] = inner;
+                                prettyIn = node.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
             var rawTruncated = Services.Logger.TruncateUtf8(json);
             Traffic.Add(new TrafficItem
             {

@@ -167,7 +167,7 @@ namespace Agent.UI.Wpf.Services
                 bool ok=false; string? action=null; object? result=null; string? errStr=null;
                 // Collect data fields (result/detail/...) into a map so callers can access both
                 var dataMap = new System.Collections.Generic.Dictionary<string, object?>();
-                string? evtKind=null, topic=null, type=null; object? display=null;
+                string? evtKind=null, topic=null, type=null;
 
                 for (int i=0; i<(mapLen ?? int.MaxValue); i++)
                 {
@@ -183,7 +183,7 @@ namespace Agent.UI.Wpf.Services
                         case "evt":    evtKind = r.ReadTextString(); hasEvt = true; break;
                         case "topic":  topic = r.ReadTextString(); break;
                         case "type":   type = r.ReadTextString(); break;
-                        case "display":display = ReadNodeAsObject(r); dataMap["display"] = display; break;
+                        case "data": var dataNode = ReadNodeAsObject(r); dataMap["data"] = dataNode; break;
                         case "detail": var detailNode = ReadNodeAsObject(r); dataMap["detail"] = detailNode; break;
 
                         default: SkipAny(r); break;
@@ -202,7 +202,9 @@ namespace Agent.UI.Wpf.Services
                 }
                 if (hasEvt)
                 {
-                    evt = new Evt { Kind = evtKind ?? "unknown", Data = new { topic, type, display } };
+                    // Return event with topic/type and collected data fields (v2.0: include 'data')
+                    object? dataToReturn = dataMap.TryGetValue("data", out var d) ? d : null;
+                    evt = new Evt { Kind = evtKind ?? "unknown", Data = new { topic, type, data = dataToReturn } };
                     Services.Logger.Trace($"CborMapCodec IN EVT kind={evt.Kind}");
                     return true;
                 }

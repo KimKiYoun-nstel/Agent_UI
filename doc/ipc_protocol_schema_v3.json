@@ -1,0 +1,425 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IPC JSON/CBOR Protocol v3.0 - Schema",
+    "description": "UI ↔ Gateway IPC 본문(JSON)의 형식 검증 스키마. 프레임 헤더(type=req/rsp/evt)는 전송 계층에서 구분되므로, 이 스키마는 본문만 다룹니다.",
+    "definitions": {
+        "target": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "participant",
+                        "publisher",
+                        "subscriber",
+                        "writer",
+                        "reader",
+                        "qos",
+                        "dds_entities"
+                    ]
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true
+        },
+        "request": {
+            "type": "object",
+            "required": [
+                "op"
+            ],
+            "properties": {
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "create",
+                        "write",
+                        "clear",
+                        "hello",
+                        "get"
+                    ]
+                },
+                "target": {
+                    "$ref": "#/definitions/target"
+                },
+                "args": {
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "additionalProperties": true
+                },
+                "data": {
+                    "type": [
+                        "object",
+                        "null"
+                    ]
+                },
+                "proto": {
+                    "type": "integer"
+                }
+            },
+            "additionalProperties": true,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "op": {
+                                "const": "clear"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "target"
+                        ],
+                        "properties": {
+                            "target": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "const": "dds_entities"
+                                    }
+                                },
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "op": {
+                                "const": "get"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "target"
+                        ],
+                        "properties": {
+                            "target": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "const": "qos"
+                                    }
+                                },
+                                "required": [
+                                    "kind"
+                                ],
+                                "additionalProperties": true
+                            },
+                            "args": {
+                                "type": [
+                                    "object",
+                                    "null"
+                                ],
+                                "properties": {
+                                    "include_builtin": {
+                                        "type": "boolean"
+                                    },
+                                    "detail": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "op": {
+                                "const": "create"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "target"
+                        ],
+                        "oneOf": [
+                            {
+                                "properties": {
+                                    "target": {
+                                        "properties": {
+                                            "kind": {
+                                                "const": "participant"
+                                            }
+                                        }
+                                    }
+                                },
+                                "description": "create.participant — args.domain(선택), args.qos(선택)"
+                            },
+                            {
+                                "properties": {
+                                    "target": {
+                                        "properties": {
+                                            "kind": {
+                                                "const": "publisher"
+                                            }
+                                        }
+                                    }
+                                },
+                                "description": "create.publisher — args.domain/publisher/qos (선택)"
+                            },
+                            {
+                                "properties": {
+                                    "target": {
+                                        "properties": {
+                                            "kind": {
+                                                "const": "subscriber"
+                                            }
+                                        }
+                                    }
+                                },
+                                "description": "create.subscriber — args.domain/subscriber/qos (선택)"
+                            },
+                            {
+                                "properties": {
+                                    "target": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "const": "writer"
+                                            },
+                                            "topic": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "kind",
+                                            "topic",
+                                            "type"
+                                        ],
+                                        "additionalProperties": true
+                                    }
+                                },
+                                "description": "create.writer — target.topic/type 필수; args.domain/publisher/qos (선택)"
+                            },
+                            {
+                                "properties": {
+                                    "target": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "const": "reader"
+                                            },
+                                            "topic": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "kind",
+                                            "topic",
+                                            "type"
+                                        ],
+                                        "additionalProperties": true
+                                    }
+                                },
+                                "description": "create.reader — target.topic/type 필수; args.domain/subscriber/qos (선택)"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "op": {
+                                "const": "write"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "target",
+                            "data"
+                        ],
+                        "properties": {
+                            "target": {
+                                "type": "object",
+                                "properties": {
+                                    "kind": {
+                                        "const": "writer"
+                                    },
+                                    "topic": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "kind",
+                                    "topic"
+                                ],
+                                "additionalProperties": true
+                            },
+                            "data": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "op": {
+                                "const": "hello"
+                            }
+                        }
+                    },
+                    "then": {}
+                }
+            ],
+            "examples": [
+                {
+                    "op": "clear",
+                    "target": {
+                        "kind": "dds_entities"
+                    }
+                },
+                {
+                    "op": "get",
+                    "target": {
+                        "kind": "qos"
+                    },
+                    "args": {
+                        "include_builtin": true,
+                        "detail": true
+                    }
+                },
+                {
+                    "op": "create",
+                    "target": {
+                        "kind": "writer",
+                        "topic": "ExampleTopic",
+                        "type": "ExampleType"
+                    },
+                    "args": {
+                        "domain": 0,
+                        "publisher": "pub1",
+                        "qos": "TriadQosLib::DefaultReliable"
+                    }
+                },
+                {
+                    "op": "write",
+                    "target": {
+                        "kind": "writer",
+                        "topic": "chat"
+                    },
+                    "data": {
+                        "text": "Hello world"
+                    }
+                },
+                {
+                    "op": "hello"
+                }
+            ]
+        },
+        "response": {
+            "type": "object",
+            "required": [
+                "ok"
+            ],
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "type": [
+                        "object",
+                        "array"
+                    ]
+                },
+                "detail": {
+                    "type": [
+                        "object",
+                        "array"
+                    ]
+                },
+                "err": {
+                    "type": "integer"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "integer"
+                }
+            },
+            "additionalProperties": true,
+            "examples": [
+                {
+                    "ok": true,
+                    "result": {
+                        "action": "dds entities cleared"
+                    }
+                },
+                {
+                    "ok": false,
+                    "err": 6,
+                    "msg": "Missing topic or type tag"
+                },
+                {
+                    "ok": true,
+                    "result": [
+                        "TriadQosLib::DefaultReliable"
+                    ],
+                    "detail": [
+                        {
+                            "TriadQosLib::DefaultReliable": {}
+                        }
+                    ]
+                }
+            ]
+        },
+        "event": {
+            "type": "object",
+            "required": [
+                "evt",
+                "topic",
+                "type",
+                "data"
+            ],
+            "properties": {
+                "evt": {
+                    "const": "data"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object"
+                }
+            },
+            "additionalProperties": true,
+            "examples": [
+                {
+                    "evt": "data",
+                    "topic": "chat",
+                    "type": "StringMsg",
+                    "data": {
+                        "text": "Hello world"
+                    }
+                }
+            ]
+        }
+    }
+}
